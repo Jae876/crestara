@@ -1,5 +1,5 @@
 {
-  "buildCommand": "npm ci && npm run build && npm run db:migrate:prod",
+  "buildCommand": "npm ci && npm run build",
   "outputDirectory": ".next",
   "env": {
     "NODE_ENV": "production"
@@ -8,5 +8,6 @@
     "src/app/api/**/*.ts": {
       "maxDuration": 30
     }
-  }
+  },
+  "installCommand": "npm ci"
 }

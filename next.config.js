@@ -14,17 +14,6 @@ const nextConfig = {
       },
     ],
   },
-  // API requests go through middleware.ts which proxies to backend
-  rewrites: async () => {
-    return {
-      beforeFiles: [
-        {
-          source: '/api/:path*',
-          destination: 'http://localhost:3001/api/:path*',
-        },
-      ],
-    };
-  },
 };
 
 module.exports = nextConfig;
