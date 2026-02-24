@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
 import { AuthService } from '@/lib/services/auth.service';
-
-const prisma = new PrismaClient();
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,7 +13,7 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    const authService = new AuthService(prisma);
+    const authService = new AuthService();
     const payload = await authService.verifyToken(token);
     
     return NextResponse.json({ valid: true, payload }, { status: 200 });
