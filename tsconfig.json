@@ -31,6 +31,9 @@
     "paths": {
       "@/*": [
         "./src/*"
+      ],
+      "@crestara/shared": [
+        "./src/shared/index.ts"
       ]
     },
     "plugins": [

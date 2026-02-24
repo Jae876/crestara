@@ -1,224 +1,201 @@
-# 🚀 Crestara: Premium Crypto Casino + Cloud Mining Platform
+# 🎨 Crestara Frontend
 
-**Crestara** is a production-grade hybrid crypto casino and AI-powered cloud mining platform with a sophisticated futuristic aesthetic. Built with modern fintech/iGaming best practices.
+**Next.js 14+ React web application** for the Crestara crypto casino and mining platform.
 
-## 📋 Project Structure
+## 📁 Structure
 
 ```
-crestara/
-├── frontend/              # Next.js 14+ web app
-│   ├── app/              # App Router pages
-│   ├── components/       # Reusable UI components
-│   ├── lib/              # Types, utilities, API clients
-│   └── public/           # Static assets
-├── backend/               # NestJS API server
-│   ├── src/              # Source code (controllers, services, entities)
-│   ├── prisma/           # ORM schema & migrations
-│   └── test/             # Tests
-├── shared/                # Shared types & utilities
-└── package.json           # Root workspace config
+frontend/
+├── public/              # Static assets
+├── src/
+│   ├── app/            # Next.js App Router pages
+│   │   ├── auth/       # Authentication pages
+│   │   ├── casino/     # Casino game pages
+│   │   ├── mining/     # Mining bot pages
+│   │   ├── dashboard/  # User dashboard
+│   │   ├── admin/      # Admin panel
+│   │   └── layout.tsx  # Root layout with Crestara logo
+│   ├── components/     # Reusable React components
+│   │   ├── Header.tsx
+│   │   ├── Footer.tsx
+│   │   └── CrestanaLogo.tsx  # SVG logo component
+│   ├── hooks/          # Custom React hooks
+│   │   ├── useApi.ts   # React Query hooks for API
+│   │   └── useSocket.ts # WebSocket integration
+│   ├── lib/            # Utilities & config
+│   │   └── api-client.ts  # Axios instance with auth
+│   ├── store/          # Zustand state management
+│   │   ├── authStore.ts
+│   │   └── balanceStore.ts
+│   └── styles/         # Global styles
+└── package.json
 ```
 
-## 🛠 Tech Stack
+## 🚀 Getting Started
 
-### Frontend
-- **Next.js 14+** (App Router, SSR, API Routes)
-- **TypeScript** for type safety
-- **Tailwind CSS** with custom dark/neon theme
-- **Framer Motion** for animations
-- **TanStack Query (React Query)** for data fetching
-- **Zustand** for state management
-- **Socket.io Client** for real-time updates
+### Install Dependencies
+```bash
+cd frontend
+npm install
+```
 
-### Backend
-- **NestJS** with modular architecture
-- **Prisma ORM** for database abstraction
-- **PostgreSQL** as primary datastore
-- **Redis** for caching, sessions, and queues
-- **Socket.io** for real-time notifications
-- **Helmet** & **Rate Limiting** for security
+### Environment Setup
+Create `.env.local`:
+```env
+NEXT_PUBLIC_API_BASE_URL=http://localhost:3001
+NEXT_PUBLIC_BRAND=Crestara
+```
 
-### Infrastructure
-- **Frontend Deployment**: Vercel
-- **Backend Deployment**: Railway / Fly.io / Docker
-- **Database**: PostgreSQL (managed or Docker)
-- **Cache**: Redis (managed or Docker)
+### Run Development Server
+```bash
+npm run dev
+```
+Open [http://localhost:3000](http://localhost:3000)
 
-## 📦 Installation & Setup
+## 🎨 Design System
 
-### Prerequisites
-- Node.js >= 18.17.0
-- npm >= 9.0.0
-- PostgreSQL 14+ (local or managed)
-- Redis (optional for dev, required for prod)
+### Colors
+- **Background**: Dark cosmic theme (#0A0E12, #001F3F)
+- **Primary Accent**: Neon Teal (#00C4B4) & Cyan (#1E90FF)
+- **Secondary Accent**: Metallic Gold (#C9A96E) & Silver (#D9D5C8)
+- **Borders**: #1A2940
 
-### Steps
+### Typography
+- **Headings**: Orbitron (futuristic)
+- **Body**: System sans-serif
 
-1. **Clone & Install**
-   ```bash
-   cd crestara
-   npm install
-   ```
+### Animations
+- Framer Motion for smooth transitions
+- Glow effects on interactive elements
+- Pulsing animations on logo
 
-2. **Setup Environment**
-   ```bash
-   cp .env.example .env.local
-   # Edit .env.local with your DB, Redis, API keys
-   ```
+## 📦 Key Dependencies
 
-3. **Database Setup (Backend)**
-   ```bash
-   cd backend
-   npx prisma migrate dev --name init
-   npx prisma generate
-   ```
+- **Next.js 14**: Framework
+- **React 18**: UI library
+- **TypeScript**: Type safety
+- **Tailwind CSS**: Styling with custom theme
+- **Framer Motion**: Animations
+- **TanStack Query**: Data fetching & caching
+- **Zustand**: State management
+- **Socket.io Client**: Real-time updates
+- **React Hook Form**: Form handling
+- **Zod**: Schema validation
 
-4. **Run Development**
-   ```bash
-   # Run both frontend & backend in parallel
-   npm run dev
+## 🔗 API Integration
 
-   # Or separately
-   npm run dev:frontend  # http://localhost:3000
-   npm run dev:backend   # http://localhost:3001
-   ```
+All API calls use the `useApi` hooks from `src/hooks/useApi.ts`:
 
-## 🎮 Core Features
+```typescript
+import { useLogin, useCoins, usePlaceBet } from '@/hooks/useApi';
 
-### User Authentication
-- Email/password sign-up with OTP verification
-- JWT + refresh tokens (Argon2 hashing)
-- Role-based access (USER, ADMIN)
-- KYC tracking
+// In component
+const { mutate: login } = useLogin();
+const { data: coins } = useCoins();
+```
 
-### 💰 Funding & Transactions
-- 130+ cryptocurrency support (BTC, ETH, SOL, USDT, etc.)
-- CoinGecko live pricing & logos
-- Unique deposit addresses per coin/network
-- Transaction tracking with webhooks
-- Real-time balance updates
+## 🔐 Authentication
 
-### 🎰 Casino Games
-- **Provably Fair Originals**: Crash, Plinko, Dice, Mines, Coinflip, Keno
-- **Slots/Live/Table**: Integration points for Pragmatic Play, BGaming, Evolution
-- House edge logic, bet tracking, payout calculations
+- **JWT Tokens**: Access + Refresh tokens stored in localStorage
+- **Auto Refresh**: Axios interceptor handles token refresh
+- **Protected Routes**: Check `useAuthStore` for user state
 
-### ⛏️ AI Cloud Mining Bots
-- Multiple packages: Basic ($5), Pro ($10), etc.
-- Coin-specific mining (BTC SHA-256, XMR RandomX, LTC Scrypt, etc.)
-- Daily earnings with cron-based payouts
-- User dashboard with bot activation/tracking
+## 📱 Pages
 
-### 🎁 Bonuses & Referrals
-- 300% welcome bonus (40x wagering) on first deposit
-- 2 free spins on sign-up
-- Affiliate program with $2 credit per referred deposit
-- Referral link tracking (?ref=CODE)
+| Route | Description |
+|-------|-------------|
+| `/` | Landing page with hero |
+| `/auth/login` | Login form |
+| `/auth/signup` | Registration with welcome bonus |
+| `/dashboard` | User dashboard & balance |
+| `/casino` | Game selection & play |
+| `/mining` | Mining packages & bot management |
+| `/referrals` | Referral program & stats |
+| `/admin` | Admin dashboard (role-gated) |
 
-### 👨‍💼 Admin Dashboard
-- User management (list, search, balance edit, ban)
-- Transaction monitoring & approval workflow
-- Bonus/referral configurations
-- Game settings & house edge tweaks
-- Analytics with Recharts & CSV exports
-- Real-time monitoring via Socket.io
+## 🎮 Components
 
-## 🔐 Security Features
+### CrestanaLogo
+SVG logo with rotating animation, circuit patterns, and crypto coin elements.
 
-- **Rate Limiting**: Prevent brute force & abuse
-- **CSRF Protection**: Token-based
-- **Helmet**: HTTP security headers
-- **JWT Validation**: Token verification on all protected routes
-- **Argon2 Hashing**: Industry-standard password hashing
-- **Zod Validation**: Input validation on DTO level
-- **Logging**: Pino for structured logging
-- **HTTPS**: Enforced in production
+```typescript
+<CrestanaLogo size="large" animated={true} />
+```
 
-## 🎨 Branding
+### Header
+Navigation with auth state, mobile menu, logo integration.
 
-**Crestara** logo is prominently integrated throughout the UI:
-- Large stylized **C** with vertical blade/pillar structures
-- Encircled by high-tech circuit ring
-- Orbiting crypto coin elements (dynamic animation)
-- Neon blue/gold glow accents
-- Dark cosmic theme (#0A0E12 to #001F3F)
-- Metallic silver/chrome accents (#D9D5C8)
+### Dashboard
+Balance cards, quick links, feature previews.
 
-**Logo appear in**:
-- Header (with pulse glow animation)
-- Footer
-- Login/signup pages
-- Dashboard hero section
-- Loading screens
-- Favicon
+## 🔌 WebSocket Integration
 
-## 📡 API Integration Points
+Real-time updates via Socket.io:
 
-- **CoinGecko**: Live crypto prices, market caps, logos
-- **Tatum.io**: Blockchain deposit address generation, webhook listeners
-- **Pragmatic Play / BGaming / Evolution**: Casino game iframes/SDKs
-- **Socket.io**: Real-time wins feed, mining notifications, admin broadcasts
+```typescript
+import { useSocket } from '@/hooks/useSocket';
 
-## 🚀 Deployment
+useSocket();  // Connects to backend socket
+// Listens to: notification, bet:won, mining:payout, price:update
+```
 
-### Frontend (Vercel)
+## 🛠️ Building
+
+```bash
+npm run build    # Production build
+npm run lint     # ESLint check
+npm run format   # Prettier formatting
+npm start        # Start production server
+```
+
+## 📚 API Hooks
+
+### Authentication
+- `useLogin()` - Sign in
+- `useSignUp()` - Register
+
+### Funding
+- `useCoins()` - Get supported coins
+- `useInitiateDeposit()` - Start deposit
+- `useTransactions()` - Get user transactions
+
+### Mining
+- `useMiningPackages()` - Get available packages
+- `usePurchaseBot()` - Buy mining bot
+- `useUserBots()` - Get active bots
+
+### Casino
+- `useGames()` - Get game list
+- `usePlaceBet()` - Place a bet
+- `useUserBets()` - Get bet history
+
+### Referrals
+- `useReferralStats()` - Get referral earnings
+
+## 🌐 Deployment
+
+### Vercel (Recommended)
 ```bash
 cd frontend
 vercel deploy
 ```
 
-### Backend (Railway / Fly.io)
-```bash
-# Railway
-railway up
+Set environment variables in Vercel dashboard:
+- `NEXT_PUBLIC_API_BASE_URL`: Production API URL
 
-# Fly.io
-flyctl deploy
+### Docker
+```dockerfile
+FROM node:18-alpine
+WORKDIR /app
+COPY . .
+RUN npm install && npm run build
+EXPOSE 3000
+CMD ["npm", "start"]
 ```
 
-### Environment Secrets
-Set all variables from `.env.example` in your deployment platform's secret management.
+## 📖 More Info
 
-## 💾 Database Schema
-
-Key entities:
-- **User**: Authentication, balance, referrals, KYC
-- **Transaction**: Deposits, withdrawals, game payouts
-- **Bet**: Casino bet history, outcomes, multipliers
-- **MiningBot**: Package, coin, activation dates, earnings
-- **Bonus**: Welcome, free spins, referral attribution
-- **Referral**: Affiliate tracking, conversion status
-
-See [backend/prisma/schema.prisma](backend/prisma/schema.prisma) for full schema.
-
-## 📝 Testing
-
-```bash
-# Run all tests
-npm run test
-
-# With coverage
-npm run test:coverage
-```
-
-## 📚 Documentation
-
-- [Frontend Setup](frontend/README.md)
-- [Backend Setup](backend/README.md)
-- [API Documentation](backend/API.md) 
-- [Database Schema](backend/prisma/README.md)
-
-## 🤝 Support & Development
-
-For issues, feature requests, or contributions:
-- Check GitHub Issues
-- Review CONTRIBUTING.md
-- Contact: dev@crestara.io
-
-## 📄 License
-
-Proprietary. Crestara Platform © 2026.
-
----
-
-**Built with ❤️ for the future of fintech.**
+- [Next.js Docs](https://nextjs.org)
+- [Tailwind CSS](https://tailwindcss.com)
+- [Framer Motion](https://www.framer.com/motion/)
+- [TanStack Query](https://tanstack.com/query/)

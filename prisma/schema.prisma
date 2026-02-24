@@ -1,0 +1,300 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum KycStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+enum TransactionType {
+  DEPOSIT
+  WITHDRAWAL
+  GAME_PAYOUT
+  MINING_PAYOUT
+  BONUS_CREDIT
+  REFERRAL_BONUS
+}
+
+enum TransactionStatus {
+  PENDING
+  CONFIRMED
+  FAILED
+  MANUAL_REVIEW
+}
+
+enum GameType {
+  CRASH
+  PLINKO
+  DICE
+  MINES
+  COINFLIP
+  KENO
+  SLOTS
+  ROULETTE
+}
+
+enum MiningPackageType {
+  BASIC
+  PRO
+  ELITE
+}
+
+enum MiningCoinType {
+  BTC
+  ETH
+  XMR
+  LTC
+  DOGE
+  RVN
+}
+
+enum BonusType {
+  WELCOME
+  FREE_SPINS
+  REFERRAL
+}
+
+enum ReferralStatus {
+  PENDING
+  CONVERTED
+  CREDITED
+}
+
+// ==================
+// CORE ENTITIES
+// ==================
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  passwordHash  String
+  role          UserRole  @default(USER)
+  balanceUSD    Float     @default(0)
+  bonusBalance  Float     @default(0)
+  
+  // KYC & Verification
+  kycStatus     KycStatus @default(PENDING)
+  kycVerifiedAt DateTime?
+  
+  // Referral Program
+  referralCode  String    @unique @default(cuid())
+  referredById  String?
+  referredBy    User?     @relation("ReferredBy", fields: [referredById], references: [id], onDelete: SetNull)
+  referrals     User[]    @relation("ReferredBy")
+  
+  // Timestamps
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  // Relations
+  transactions  Transaction[]
+  bets          Bet[]
+  bonuses       Bonus[]
+  miningBots    MiningBot[]
+  referralLinks Referral[] @relation("Referrer")
+  asReferred    Referral[] @relation("ReferredUser")
+  
+  @@index([email])
+  @@index([referralCode])
+}
+
+// ==================
+// TRANSACTIONS
+// ==================
+
+model Transaction {
+  id                String    @id @default(cuid())
+  userId            String
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  type              TransactionType
+  status            TransactionStatus @default(PENDING)
+  
+  // Crypto Details
+  coinSymbol        String    // BTC, ETH, SOL, etc.
+  networkType       String?   // ethereum, bsc, solana, etc.
+  amount            Float     // Amount in crypto
+  amountUSD         Float     // USD equivalent at time of tx
+  
+  // Addresses
+  depositAddress    String?   // User's deposit address (for deposits)
+  destinationAddress String?  // Where crypto is sent (for withdrawals)
+  txHash            String?   // Blockchain tx hash
+  
+  // Metadata
+  metadata          Json?
+  
+  // Timestamps
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  confirmedAt       DateTime?
+  
+  @@index([userId])
+  @@index([status])
+  @@index([coinSymbol])
+}
+
+// ==================
+// CASINO / GAMING
+// ==================
+
+model Bet {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  gameType      GameType
+  betAmount     Float
+  multiplier    Float     @default(1)
+  payout        Float     @default(0)
+  outcome       String    // WIN or LOSS
+  
+  // Provably Fair
+  clientSeed    String?
+  serverSeed    String?
+  hash          String?
+  
+  // Metadata
+  metadata      Json?   // Store JSON as string
+  
+  createdAt     DateTime  @default(now())
+  
+  @@index([userId])
+  @@index([gameType])
+}
+
+// ==================
+// BONUSES & PROMOTIONS
+// ==================
+
+model Bonus {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  type          BonusType
+  amount        Float
+  wagerRequired Float     // 40x for welcome bonus
+  wagered       Float     @default(0)
+  
+  isActive      Boolean   @default(true)
+  expiresAt     DateTime
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  @@index([userId])
+  @@index([isActive])
+}
+
+// ==================
+// MINING BOTS
+// ==================
+
+model MiningBot {
+  id              String    @id @default(cuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  packageType     MiningPackageType
+  coin            MiningCoinType
+  
+  // Dates
+  activationDate  DateTime  @default(now())
+  endDate         DateTime
+  
+  // Earnings
+  dailyRate       Float     // USD/day
+  totalMined      Float     @default(0)
+  
+  status          String    @default("ACTIVE") // ACTIVE, INACTIVE, COMPLETED
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  @@index([userId])
+  @@index([status])
+}
+
+// ==================
+// REFERRALS
+// ==================
+
+model Referral {
+  id              String    @id @default(cuid())
+  referrerId      String
+  referrer        User      @relation("Referrer", fields: [referrerId], references: [id], onDelete: Cascade)
+  
+  referredUserId  String
+  referredUser    User      @relation("ReferredUser", fields: [referredUserId], references: [id], onDelete: Cascade)
+  
+  referralCode    String
+  status          ReferralStatus @default(PENDING)
+  bonusAmount     Float     @default(2) // $2 USDT
+  
+  createdAt       DateTime  @default(now())
+  creditedAt      DateTime?
+  
+  @@unique([referrerId, referredUserId])
+  @@index([referralCode])
+  @@index([status])
+}
+
+// ==================
+// ADMIN CONFIG
+// ==================
+
+model GameConfig {
+  id              String    @id @default(cuid())
+  gameType        GameType @unique
+  
+  isEnabled       Boolean   @default(true)
+  houseEdgePercent Float    @default(2.5)
+  minBet          Float     @default(0.01)
+  maxBet          Float     @default(10000)
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model SystemConfig {
+  id              String    @id @default(cuid())
+  key             String    @unique
+  value           String
+  description     String?
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+// ==================
+// AUDIT LOGS
+// ==================
+
+model AuditLog {
+  id              String    @id @default(cuid())
+  userId          String?   // Optional if system action
+  action          String
+  resource        String
+  details         Json?
+  
+  createdAt       DateTime  @default(now())
+  
+  @@index([userId])
+  @@index([action])
+}
