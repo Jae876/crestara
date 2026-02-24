@@ -1,363 +1,433 @@
-# 🚀 Deployment Guide
+# 🚀 CRESTARA - PRODUCTION DEPLOYMENT GUIDE
 
-Complete production deployment strategy for Crestara platform.
+**Status**: ✅ **PRODUCTION READY**
 
-## Architecture Overview
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                      Frontend (Vercel)                       │
-│                   Next.js 14+ React App                      │
-│          Deployed globally with CDN + serverless             │
-└──────────────────────┬──────────────────────────────────────┘
-                       │ HTTPS/WSS
-                       ↓
-┌─────────────────────────────────────────────────────────────┐
-│                  Backend (Railway/Fly.io)                    │
-│                      NestJS REST API                         │
-│                  Socket.io Real-time Hub                     │
-│                  JWT Auth + Rate Limiting                    │
-└─┬────────────────────────────────┬──────────────────────────┘
-  │                                │
-  ↓                                ↓
-┌─────────────────────────────────────────────────────────────┐
-│                   Data & Cache Layer                         │
-│  PostgreSQL (db) │ Redis (cache/sessions/queues)            │
-│                  │ Prisma ORM                               │
-└─────────────────────────────────────────────────────────────┘
-  │
-  ├─→ CoinGecko API (prices)
-  ├─→ Tatum.io (blockchain deposits)
-  ├─→ Pragmatic Play / BGaming (game iframes)
-  └─→ Email Service (SMS/Sendgrid)
-```
-
-## Frontend Deployment (Vercel)
-
-### Setup
-
-1. **Create Git Repository**
-   ```bash
-   git init
-   git remote add origin https://github.com/yourusername/crestara.git
-   git branch -M main
-   git push -u origin main
-   ```
-
-2. **Connect to Vercel**
-   - Go to vercel.com
-   - Click "New Project"
-   - Import GitHub repository
-   - Select `frontend/` as root directory
-
-3. **Environment Variables**
-   In Vercel dashboard, add:
-   ```
-   NEXT_PUBLIC_API_BASE_URL=https://api.crestara.io
-   NEXT_PUBLIC_BRAND=Crestara
-   ```
-
-4. **Deploy**
-   - Automatic on Git push to main
-   - Previews for pull requests
-   - Custom domain: crestara.io
-
-### Production Checklist
-
-- [ ] `.env.local` excluded from git (.gitignore)
-- [ ] Minification & code splitting enabled
-- [ ] Image optimization (Next.js Image)
-- [ ] Security headers set (Vercel config)
-- [ ] CORS configured for API domain
-- [ ] Analytics enabled (optional)
+Complete guide to deploy Crestara to production in ~15 minutes.
 
 ---
 
-## Backend Deployment (Railway or Fly.io)
+## 📋 WHAT YOU'LL NEED
 
-### Option 1: Railway
+1. **GitHub account** (you already have one)
+2. **Neon account** (free tier, sign up: https://console.neon.tech)
+3. **Vercel account** (connects to GitHub, sign up: https://vercel.com)
+4. **Time**: 5-15 minutes
 
-#### Setup
+---
 
-1. **Create Project**
-   ```bash
-   npm install -g @railway/cli
-   railway init
-   railway login
-   ```
+## 🎯 DEPLOYMENT ARCHITECTURE
 
-2. **Create Services**
-   - PostgreSQL database
-   - Redis cache
-   - NestJS app
-
-   ```bash
-   railway service add
-   ```
-
-3. **Environment Variables**
-   ```
-   DATABASE_URL=postgresql://user:pass@localhost:5432/crestara
-   REDIS_URL=redis://localhost:6379
-   JWT_SECRET=your-secret-key-min-32-chars
-   NODE_ENV=production
-   PORT=3001
-   ```
-
-4. **Deploy**
-   ```bash
-   railway up
-   ```
-
-### Option 2: Fly.io
-
-#### Setup
-
-1. **Create App**
-   ```bash
-   flyctl apps create crestara-api
-   cd backend
-   flyctl launch
-   ```
-
-2. **Attach PostgreSQL**
-   ```bash
-   flyctl postgres create crestara-db
-   flyctl postgres attach crestara-db
-   ```
-
-3. **Attach Redis**
-   ```bash
-   flyctl upscale add redis-cache 1
-   ```
-
-4. **Environment Variables** (fly.toml)
-   ```toml
-   [env]
-   DATABASE_URL = "postgresql://..."
-   REDIS_URL = "redis://..."
-   JWT_SECRET = "your-secret"
-   NODE_ENV = "production"
-   ```
-
-5. **Deploy**
-   ```bash
-   flyctl deploy
-   ```
-
-### Database Setup
-
-#### PostgreSQL
-
-**Local Development**:
-```bash
-docker run -d \
-  --name postgres \
-  -e POSTGRES_PASSWORD=postgres \
-  -e POSTGRES_DB=crestara_dev \
-  -p 5432:5432 \
-  postgres:15
+```
+┌─────────────────┐         ┌──────────────────┐         ┌─────────────────┐
+│   Your Code     │         │   Vercel Dev     │         │  Neon           │
+│   (GitHub)      │────────▶│   Server         │────────▶│  PostgreSQL     │
+│  Crestara Repo  │         │   (Next.js)      │         │  (Auto-scale)   │
+└─────────────────┘         └──────────────────┘         └─────────────────┘
+        Push                 Auto-deploys                 Auto-migrates
 ```
 
-**Apply Migrations**:
+**What happens automatically:**
+1. You push code to GitHub
+2. Vercel detects change → Starts build
+3. Vercel runs: `npm run build` + `npm run db:migrate:prod`
+4. Database migrations execute automatically
+5. Health check endpoint verifies database connectivity
+6. Vercel deploys live URL
+
+**How long it takes:**
+- Build: 3-5 minutes
+- Migrations: 1-2 minutes
+- Deployment: 1-2 minutes
+- **Total: ~10 minutes**
+
+---
+
+## ⚡ QUICK START (5 STEPS ONLY)
+
+### Step 1: Create Neon Database (3 min)
+
+1. Go to: https://console.neon.tech
+2. Sign up (GitHub or email)
+3. Click "Create project"
+4. Name: `crestara`
+5. Copy the connection string (looks like `postgresql://...?sslmode=require`)
+6. Create second database: Databases tab → New → `neondb_shadow`
+7. Copy that connection string too
+
+**You now have:**
+- `DATABASE_URL` = Main database connection
+- `SHADOW_DATABASE_URL` = Migration testing database
+
+### Step 2: Generate JWT Secrets (1 min)
+
+Open PowerShell and run twice:
+
+```powershell
+# Windows PowerShell
+openssl rand -hex 32
+```
+
+Or use Python:
+```python
+import secrets; print(secrets.token_hex(32))
+```
+
+Get 2 values:
+- `JWT_SECRET`
+- `JWT_REFRESH_SECRET`
+
+### Step 3: Configure Vercel (1 min)
+
+1. Go to: https://vercel.com/new
+2. Click **"GitHub"**
+3. Select **`Jae876/crestara`**
+4. Click **"Import"**
+
+Add Environment Variables:
+
+| Name | Value |
+|------|-------|
+| `DATABASE_URL` | Your Neon main connection string |
+| `SHADOW_DATABASE_URL` | Your Neon shadow connection string |
+| `JWT_SECRET` | First 64-char hex value |
+| `JWT_REFRESH_SECRET` | Second 64-char hex value |
+| `NODE_ENV` | `production` |
+
+Click **"Deploy"**
+
+### Step 4: Wait for Deployment (10 min)
+
+Vercel will automatically:
+1. Build Next.js app
+2. Run database migrations
+3. Verify database connectivity
+4. Deploy live
+
+When it says **"Domain ready"**, you're live! ✅
+
+### Step 5: Test It (2 min)
+
 ```bash
+# Get your Vercel URL (from dashboard)
+$SITE = "https://your-app.vercel.app"
+
+# Test 1: Health check
+curl "$SITE/api/health"
+# Expected: {"status":"healthy","database":{"connected":true}}
+
+# Test 2: Sign up
+curl -X POST "$SITE/api/auth/signup" `
+  -H "Content-Type: application/json" `
+  -d @- << 'EOF'
+{
+  "email":"test@example.com",
+  "password":"Test@123456",
+  "confirmPassword":"Test@123456"
+}
+EOF
+# Expected: {"accessToken":"eyJ...", "user":{"id":"...","email":"test@example.com"}}
+```
+
+✅ **If tests pass, you're LIVE!**
+
+---
+
+## 📖 DETAILED SETUP GUIDES
+
+For step-by-step walkthroughs, see:
+- [NEON_SETUP.md](./NEON_SETUP.md) - Complete Neon PostgreSQL setup
+- [VERCEL_SETUP.md](./VERCEL_SETUP.md) - Complete Vercel deployment guide
+---
+
+## 🏗️ WHAT'S INCLUDED
+
+### Database (PostgreSQL via Neon)
+
+8 Tables managed by Prisma:
+
+| Table | Purpose |
+|-------|---------|
+| `User` | Player accounts (emails, passwords, balances) |
+| `Transaction` | Deposits, withdrawals, payouts |
+| `Bet` | Gaming bets with outcomes |
+| `MiningBot` | Cloud mining subscriptions |
+| `Bonus` | Promotional bonuses |
+| `Referral` | Referral tracking |
+| `GameConfig` | Per-game rules and house edge |
+| `AuditLog` | Admin action history (compliance) |
+
+### Backend API (11 Endpoints)
+
+All routes in `/src/app/api/`:
+
+**Authentication** (5 endpoints)
+- `POST /api/auth/signup` - Create account
+- `POST /api/auth/login` - Get JWT token
+- `GET /api/auth/me` - Get current user
+- `POST /api/auth/refresh` - Refresh access token
+- `POST /api/auth/verify` - Check token validity
+
+**Gaming** (1 endpoint)
+- `POST /api/casino` - Place bet
+
+**Mining** (2 endpoints)
+- `GET /api/mining` - List mining subscriptions
+- `POST /api/mining` - Buy mining package
+
+**Funding & Referrals** (3 endpoints)
+- `GET /api/funding` - View transactions
+- `POST /api/funding` - Initiate deposit
+- `POST /api/referral` - Apply referral code
+
+**Admin** (🔒 Protected endpoints)
+- `GET /api/admin` - Dashboard metrics
+- `POST /api/admin?action=...` - User management, game stats, banning, etc.
+
+**Health Check** (1 endpoint)
+- `GET /api/health` - Database connectivity verification
+
+### Frontend (Next.js + React)
+
+Pages in `/src/app/`:
+- `/` - Home page with game previews
+- `/auth/(signin|signup)` - Authentication flows
+- `/dashboard` - Player dashboard
+- `/casino` - Gaming platform
+- `/mining` - Cloud mining
+- `/admin` - Admin dashboard (RBAC protected)
+
+---
+
+## 🔒 SECURITY
+
+### Built-In Protections
+
+✅ **Password Security**
+- Argon2 hashing (memory-hard, resistant to GPU attacks)
+- Configurable cost factor (2^16 memory, 3 iterations)
+
+✅ **Authentication**
+- JWT tokens (1 hour expiry)
+- Refresh tokens (7 day expiry)
+- Secure token storage (HTTP-only cookies)
+
+✅ **Database**
+- Connection pooling (prevents exhaustion)
+- Singleton client (prevents memory leaks)
+- Shadow database for safe migrations
+
+✅ **Authorization**
+- Role-based access control (RBAC)
+- Admin endpoints require ADMIN role
+- Proper error messages (no user enumeration)
+
+✅ **Audit Trail**
+- All admin actions logged
+- KYC status tracked
+- Compliance reporting ready
+
+### Environment Variables
+
+**Never commit secrets to GitHub!**
+
+Vercel stores these securely:
+- `DATABASE_URL` - PostgreSQL connection
+- `JWT_SECRET` - Access token signing key
+- `JWT_REFRESH_SECRET` - Refresh token signing key
+- `NODE_ENV` - Set to `production`
+
+---
+
+## 📊 MONITORING
+
+### Check Health Anytime
+
+```bash
+curl https://your-app.vercel.app/api/health
+```
+
+Response shows:
+- Database connection status
+- Latency (should be < 100ms)
+- Environment (production/development)
+
+### View Logs
+
+**Vercel Logs:**
+- Dashboard → Deployments → View Logs
+- See build errors, migration status, API calls
+
+**Database Logs:**
+- Neon Console → Logs tab
+- View SQL queries, connection events
+
+**Metrics:**
+- Vercel: Response time, error rate
+- Neon: Connections, queries/sec, storage used
+
+---
+
+## 🚨 TROUBLESHOOTING
+
+### "relation 'User' does not exist"
+
+**Problem**: Database schema not created
+
+**Solution**:
+```bash
+# Check Vercel build logs for migration errors
+# If failed, manually migrate:
+vercel env pull  # Get environment variables
 npm run db:migrate:prod
-npm run db:generate
 ```
 
-**Seed Data**:
-```bash
-npm run db:seed
-```
+### "too many connections"
 
----
+**Problem**: Connection pool exhausted
 
-## Redis Setup
-
-### Local Development
-```bash
-docker run -d \
-  --name redis \
-  -p 6379:6379 \
-  redis:7 redis-server
-```
-
-### Production
-- **Upstash**: Fully managed Redis (recommended for startups)
-- **Redis Cloud**: AWS/GCP/Azure hosted
-- **Fly.io PostgreSQL**: Built-in PostgreSQL backup
-
----
-
-## SSL/TLS Certificates
-
-### Automatic (Recommended)
-- **Vercel**: Auto HTTPS with Let's Encrypt
-- **Railway/Fly.io**: Auto HTTPS on deploy
-- **Custom Domain**: Add CNAME record to Vercel/Railway
-
-### Manual
-```bash
-# Let's Encrypt with Certbot
-certbot certonly --standalone -d crestara.io
-```
-
----
-
-## Domain Configuration
-
-### DNS Records
-
-```
-# CNAME for frontend (Vercel)
-crestara.io       CNAME  cname.vercel-dns.com
-
-# CNAME for API (Railway/Fly.io)
-api.crestara.io   CNAME  api.railway.io
-                  OR
-                  CNAME  api.fly.io
-
-# Optional: Email
-mail              MX     10 mail.example.com
-```
-
----
-
-## Security Hardening
-
-### Backend
-
-1. **Enable HTTPS Only**
-   ```typescript
-   app.use(helmet());
-   app.use(redirect to HTTPS);
-   ```
-
-2. **Rate Limiting**
-   ```bash
-   npm install @nestjs/throttler
-   ```
-
-3. **API Key Rotation**
-   - CoinGecko: Optional API key
-   - Tatum.io: Rotate API keys quarterly
-
-4. **Database**
-   - Restrict IP whitelist
-   - Enable SSL for connections
-   - Regular backups to separate region
-
-5. **Secrets Management**
-   - Use deployment platform's secret store
-   - Never commit .env files
-   - Rotate JWT secrets quarterly
-
-### Frontend
-
-1. **Headers** (next.config.js)
-   ```javascript
-   headers: {
-     'Strict-Transport-Security': 'max-age=31536000',
-     'X-Content-Type-Options': 'nosniff',
-     'X-Frame-Options': 'DENY',
+**Solution**:
+1. Use Neon pooled connection (faster)
+2. Limit connections in `prisma/schema.prisma`:
+   ```prisma
+   datasource db {
+     provider = "postgresql"
+     url      = env("DATABASE_URL")
+     directUrl = env("DIRECT_URL")
    }
    ```
 
-2. **Content Security Policy**
-   ```
-   default-src 'self';
-   script-src 'self' cdn.jsdelivr.net;
-   style-src 'self' 'unsafe-inline';
-   ```
+### "SSL certificate problem"
 
----
+**Problem**: Connection string missing SSL config
 
-## Monitoring & Logging
+**Solution**:
+- Verify `DATABASE_URL` ends with `?sslmode=require`
+- Update in Vercel environment variables
 
-### Backend Logs
-- **Pino**: Structured JSON logging
-- **Sentry**: Error tracking & alerting
+### App starts but no database data
 
+**Problem**: Migrations didn't run
+
+**Solution**:
+1. Vercel Dashboard → [Project Name] → Deployments
+2. Click latest deployment
+3. Scroll to "Deploy logs"
+4. Search for "prisma migrate"
+5. Look for errors or "migrations applied"
+
+If no migration output, migrations didn't run:
 ```bash
-npm install @sentry/nestjs
-```
-
-### Frontend Monitoring
-- **Vercel Analytics**: Built-in
-- **Sentry**: Client-side error tracking
-
-### Database Monitoring
-- **Railway/Fly.io**: Built-in dashboards
-- **pgAdmin**: PostgreSQL GUI (optional)
-
----
-
-## CI/CD Pipeline
-
-### GitHub Actions
-
-Create `.github/workflows/deploy.yml`:
-
-```yaml
-name: Deploy
-
-on:
-  push:
-    branches: [main]
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      
-      # Frontend
-      - name: Deploy Frontend to Vercel
-        run: vercel --prod
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-      
-      # Backend
-      - name: Deploy Backend to Railway
-        run: railway up
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-      
-      # Database
-      - name: Run Migrations
-        run: |
-          npm install
-          npm run db:migrate:prod
+# Trigger new deployment
+git commit --allow-empty -m "Trigger deployment"
+git push origin main
 ```
 
 ---
 
-## Performance Optimization
+## 🔄 CONTINUOUS DEPLOYMENT
 
-### Frontend
-- Image optimization (Next.js Image)
-- Code splitting & lazy loading
-- CDN via Vercel
-- Compression (automatically enabled)
+### How Updates Work
 
-### Backend
-- Connection pooling (Prisma)
-- Redis caching layer
-- Database indexing
-- Rate limiting on endpoints
+1. You make code changes locally
+2. Commit and push to GitHub:
+   ```bash
+   git add .
+   git commit -m "Your message"
+   git push origin main
+   ```
+3. Vercel automatically detects the push
+4. Build starts (watches on Vercel dashboard)
+5. If successful, updates go live immediately
+6. Old version still available (you can rollback)
 
-### Database
-- Add indexes on frequently queried fields
-- Archive old transactions/bets
-- Regular VACUUM & ANALYZE
+### Database Migrations are Automatic
+
+When you update `prisma/schema.prisma`:
+1. Run locally first:
+   ```bash
+   npx prisma migrate dev --name "description"
+   ```
+2. Commit and push
+3. Vercel automatically runs `prisma migrate deploy` during build
+4. No need for manual database steps!
 
 ---
 
-## Backup & Disaster Recovery
+## 📈 SCALING
 
-### Database Backups
-- **Automated**: Railway/Fly.io daily backups
-- **Manual**: `pg_dump` for PostgreSQL
+### When You Need More Resources
+
+1. **Traffic grows**: Vercel auto-scales (no config needed)
+2. **Database grows**: Upgrade Neon plan (pay-as-you-go)
+3. **More connections**: Use Neon's built-in pooling
+4. **More regions**: Vercel has 32+ data centers
+
+Neon free tier includes:
+- 3GB storage
+- Up to 10 connections
+- Daily backups
+- Auto-scaling compute
+
+---
+
+## ✅ DEPLOYMENT CHECKLIST
+
+Before going live, verify:
+
+- [ ] Neon project created (got DATABASE_URL + SHADOW_DATABASE_URL)
+- [ ] JWT secrets generated (2 hex values)
+- [ ] Vercel project connected to GitHub
+- [ ] Environment variables set in Vercel
+- [ ] Deployment completed (shows "Domain ready")
+- [ ] `/api/health` returns healthy status
+- [ ] Can sign up and login
+- [ ] Admin dashboard loads (if you're admin)
+- [ ] Database visible in Neon console
+
+---
+
+## 🎉 YOU'RE LIVE!
+
+Your production app is now:
+- ✅ Deployed globally on Vercel CDN
+- ✅ Connected to PostgreSQL database
+- ✅ Auto-scaling (no limits)
+- ✅ HTTPS secured
+- ✅ Monitored 24/7
+
+**Share your app URL:**
+```
+https://your-app.vercel.app
+```
+
+---
+
+## 📚 NEXT STEPS
+
+1. **Test thoroughly** - Try all features in production
+2. **Monitor metrics** - Check Vercel/Neon dashboards daily
+3. **Set up alerts** - Neon can email you on issues
+4. **Plan marketing** - Your app is live!
+5. **Scale gradually** - Monitor costs as you grow
+
+---
+
+## 🆘 GETTING HELP
+
+**Documentation:**
+- [Vercel Docs](https://vercel.com/docs)
+- [Neon Docs](https://neon.tech/docs)
+- [Prisma Docs](https://www.prisma.io/docs)
+- [Next.js Docs](https://nextjs.org/docs)
+
+**Support:**
+- Vercel Support: https://vercel.com/support
+- Neon Support: https://support.neon.tech
+- GitHub Issues: https://github.com/Jae876/crestara/issues
+
+---
+
+**Status: 🟢 READY FOR PRODUCTION DEPLOYMENT**
 - **Retention**: 30 days minimum
 - **Cross-region**: Store backups in separate region
 
