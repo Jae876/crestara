@@ -1,18 +1,31 @@
-import { PrismaClient } from '@prisma/client';
+import prisma from '@/lib/db';
 import * as argon2 from 'argon2';
 import { randomUUID } from 'crypto';
 import jwt from 'jsonwebtoken';
-import { SignUpRequest, LoginRequest, AuthResponse } from '@crestara/shared';
+import { SignUpRequest, LoginRequest } from '@crestara/shared';
+import { User, UserRole } from '@prisma/client';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'dev-jwt-secret';
-const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'dev-refresh-secret';
+interface AuthResponse {
+  accessToken: string;
+  refreshToken: string;
+  user: {
+    id: string;
+    email: string;
+    role: UserRole;
+  };
+}
+
+const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET;
+
+if (!JWT_SECRET || !JWT_REFRESH_SECRET) {
+  throw new Error('JWT_SECRET and JWT_REFRESH_SECRET must be set in environment');
+}
 
 export class AuthService {
-  constructor(private prisma: PrismaClient) {}
-
   async signUp(input: SignUpRequest): Promise<AuthResponse> {
     // Check if user exists
-    const existingUser = await this.prisma.user.findUnique({
+    const existingUser = await prisma.user.findUnique({
       where: { email: input.email },
     });
 
@@ -20,12 +33,17 @@ export class AuthService {
       throw new Error('Email already registered');
     }
 
-    // Hash password
-    const passwordHash = await argon2.hash(input.password);
+    // Hash password with Argon2
+    const passwordHash = await argon2.hash(input.password, {
+      type: argon2.argon2id,
+      memoryCost: 2 ** 16, // 64MB
+      timeCost: 3,
+      parallelism: 1,
+    });
     const referralCode = randomUUID();
 
     // Create user
-    const user = await this.prisma.user.create({
+    const user = await prisma.user.create({
       data: {
         email: input.email,
         passwordHash,
@@ -36,7 +54,7 @@ export class AuthService {
     // Grant welcome bonus
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 30); // 30 days
-    await this.prisma.bonus.create({
+    await prisma.bonus.create({
       data: {
         userId: user.id,
         type: 'FREE_SPINS',
@@ -46,11 +64,14 @@ export class AuthService {
       },
     });
 
+    // Log signup
+    await this.logAudit(user.id, 'USER_SIGNUP', 'user', { email: input.email });
+
     return this.generateAuthResponse(user);
   }
 
   async login(input: LoginRequest): Promise<AuthResponse> {
-    const user = await this.prisma.user.findUnique({
+    const user = await prisma.user.findUnique({
       where: { email: input.email },
     });
 
@@ -63,6 +84,9 @@ export class AuthService {
       throw new Error('Invalid email or password');
     }
 
+    // Log login
+    await this.logAudit(user.id, 'USER_LOGIN', 'user', {});
+
     return this.generateAuthResponse(user);
   }
 
@@ -70,7 +94,7 @@ export class AuthService {
     try {
       const payload = jwt.verify(refreshToken, JWT_REFRESH_SECRET) as any;
 
-      const user = await this.prisma.user.findUnique({
+      const user = await prisma.user.findUnique({
         where: { id: payload.sub },
       });
 
@@ -92,10 +116,10 @@ export class AuthService {
     }
   }
 
-  async getCurrentUser(token: string): Promise<any> {
+  async getCurrentUser(token: string): Promise<Omit<User, 'passwordHash'>> {
     try {
       const payload = jwt.verify(token, JWT_SECRET) as any;
-      const user = await this.prisma.user.findUnique({
+      const user = await prisma.user.findUnique({
         where: { id: payload.sub },
       });
 
@@ -103,17 +127,14 @@ export class AuthService {
         throw new Error('User not found');
       }
 
-      return {
-        id: user.id,
-        email: user.email,
-        role: user.role,
-      };
+      const { passwordHash, ...userWithoutPassword } = user;
+      return userWithoutPassword;
     } catch (error) {
       throw new Error('Unauthorized');
     }
   }
 
-  private generateAuthResponse(user: any): AuthResponse {
+  private generateAuthResponse(user: User): AuthResponse {
     const accessToken = jwt.sign(
       { sub: user.id, email: user.email, role: user.role },
       JWT_SECRET,
@@ -126,14 +147,27 @@ export class AuthService {
       { expiresIn: '7d' },
     );
 
+    const { passwordHash, ...userWithoutPassword } = user;
+
     return {
       accessToken,
       refreshToken,
-      user: {
-        id: user.id,
-        email: user.email,
-        role: user.role,
-      },
+      user: userWithoutPassword,
     };
+  }
+
+  private async logAudit(userId: string, action: string, resource: string, details: any) {
+    try {
+      await prisma.auditLog.create({
+        data: {
+          userId,
+          action,
+          resource,
+          details,
+        },
+      });
+    } catch (err) {
+      console.error('Failed to log audit:', err);
+    }
   }
 }
