@@ -1,0 +1,12 @@
+{
+  "buildCommand": "npm ci --include=dev && npm run build:backend && npm run build:frontend",
+  "outputDirectory": "frontend/.next",
+  "env": {
+    "NODE_ENV": "production"
+  },
+  "functions": {
+    "backend/**/*.ts": {
+      "runtime": "nodejs18.x"
+    }
+  }
+}
