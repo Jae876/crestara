@@ -1,0 +1,19 @@
+{
+  "name": "crestara-platform",
+  "version": "1.0.0",
+  "description": "Premium crypto casino + cloud mining platform with AI-powered bots",
+  "private": true,
+  "scripts": {
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "cd backend && npm run dev",
+    "build:frontend": "cd frontend && npm run build",
+    "build:backend": "cd backend && npm run build",
+    "build": "npm run build:backend && npm run build:frontend",
+    "test": "cd backend && npm run test && cd frontend && npm run test",
+    "lint": "cd backend && npm run lint && cd frontend && npm run lint"
+  },
+  "engines": {
+    "node": ">=18.17.0",
+    "npm": ">=9.0.0"
+  }
+}

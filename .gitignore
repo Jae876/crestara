@@ -1,0 +1,78 @@
+# Gitignore for Crestara monorepo
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+.env.*.production
+
+# Dependencies
+node_modules/
+*.npm
+*.yarn
+yarn-error.log
+package-lock.json
+npm-debug.log*
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+.turbo/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Testing
+coverage/
+.nyc_output/
+
+# Logs
+logs/
+*.log
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Database
+*.db
+*.sqlite
+postgres/
+
+# Redis
+dump.rdb
+
+# OS
+Thumbs.db
+.AppleDouble
+.LSOverride
+
+# Docker
+!.dockerignore
+.docker/
+docker-compose.override.yml
+
+# IDE-specific
+*.iml
+.classpath
+.c9/
+*.sublime-project
+*.sublime-workspace
+
+# Misc
+.cache/
+.parcel-cache
+.eslintcache
+.node_repl_history
+*.tgz
+*.tar.gz
+*.rar
+*.zip
