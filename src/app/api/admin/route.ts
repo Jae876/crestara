@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { extractToken, verifyToken, requireAdmin, AuthPayload } from '@/lib/auth-middleware';
+import { extractToken, verifyToken, requireAdmin } from '@/lib/auth-middleware';
 import { AdminService } from '@/lib/services/admin.service';
 
 const adminService = new AdminService();
