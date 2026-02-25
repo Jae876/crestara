@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { AuthService } from '@/lib/services/auth.service';
 
+const authService = new AuthService();
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -13,7 +15,6 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    const authService = new AuthService();
     const payload = await authService.verifyToken(token);
     
     return NextResponse.json({ valid: true, payload }, { status: 200 });
