@@ -1,5 +1,4 @@
 import prisma from '@/lib/db';
-import { UserRole } from '@prisma/client';
 
 export class AdminService {
   /**
