@@ -1,5 +1,5 @@
 import prisma from '@/lib/db';
-import { User, UserRole, GameConfig, Transaction } from '@prisma/client';
+import { UserRole } from '@prisma/client';
 
 export class AdminService {
   /**

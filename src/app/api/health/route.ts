@@ -8,7 +8,7 @@ import prisma from '@/lib/db';
  * Returns application and database status
  * Used by Vercel for deployment verification
  */
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const startTime = Date.now();
 
