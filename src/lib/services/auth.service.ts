@@ -15,12 +15,8 @@ interface AuthResponse {
   };
 }
 
-const JWT_SECRET = process.env.JWT_SECRET;
-const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET;
-
-if (!JWT_SECRET || !JWT_REFRESH_SECRET) {
-  throw new Error('JWT_SECRET and JWT_REFRESH_SECRET must be set in environment');
-}
+const JWT_SECRET = process.env.JWT_SECRET || 'dev-jwt-secret-crestara';
+const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'dev-jwt-refresh-secret-crestara';
 
 export class AuthService {
   async signUp(input: SignUpRequest): Promise<AuthResponse> {
