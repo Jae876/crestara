@@ -5,11 +5,15 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CrestanaLogo } from './CrestanaLogo';
 import { useAuthStore } from '@/store/authStore';
+import { useWheelSpins } from '@/hooks/useApi';
+import { WheelOfFortune } from './WheelOfFortune';
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [activeWheelSpin, setActiveWheelSpin] = useState<any | null>(null);
   const { user, logout } = useAuthStore();
+  const { data: wheelData, refetch: refetchWheelSpins } = useWheelSpins(!!user);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -22,6 +26,10 @@ export function Header() {
     { href: '/mining', label: 'AI Cloud Mining' },
     { href: '/referrals', label: 'Referrals' },
   ];
+
+  const wheelSpins: any[] = wheelData?.wheelSpins || [];
+  const totalAvailableSpins: number = user ? (wheelData?.totalAvailable ?? 0) : 0;
+  const firstAvailableSpin = wheelSpins.find((ws: any) => ws.spinsUsed < ws.spinsAllocated) || null;
 
   return (
     <header
@@ -67,6 +75,22 @@ export function Header() {
 
           {user ? (
             <div className="flex items-center gap-3">
+              {totalAvailableSpins > 0 && firstAvailableSpin && (
+                <motion.button
+                  onClick={() => setActiveWheelSpin(firstAvailableSpin)}
+                  animate={{ boxShadow: ['0 0 8px rgba(201,169,110,0.3)', '0 0 20px rgba(201,169,110,0.7)', '0 0 8px rgba(201,169,110,0.3)'] }}
+                  transition={{ duration: 1.6, repeat: Infinity }}
+                  className="font-bold text-xs px-3 py-1.5 rounded-lg"
+                  style={{
+                    background: 'linear-gradient(135deg, #c9a96e, #e8c46a)',
+                    color: '#000',
+                    fontFamily: 'Orbitron, system-ui',
+                    letterSpacing: '0.08em',
+                  }}
+                >
+                  🎡 Spin! ({totalAvailableSpins})
+                </motion.button>
+              )}
               <Link href="/dashboard">
                 <button className="btn-outline" style={{ padding: '8px 20px', fontSize: '0.75rem' }}>
                   Dashboard
@@ -131,6 +155,19 @@ export function Header() {
               ))}
               {user ? (
                 <div className="flex flex-col gap-3 pt-2">
+                  {totalAvailableSpins > 0 && firstAvailableSpin && (
+                    <button
+                      onClick={() => { setActiveWheelSpin(firstAvailableSpin); setIsMenuOpen(false); }}
+                      className="w-full font-bold py-2 rounded-lg text-sm"
+                      style={{
+                        background: 'linear-gradient(135deg, #c9a96e, #e8c46a)',
+                        color: '#000',
+                        fontFamily: 'Orbitron, system-ui',
+                      }}
+                    >
+                      🎡 Spin! ({totalAvailableSpins} available)
+                    </button>
+                  )}
                   <Link href="/dashboard" onClick={() => setIsMenuOpen(false)}>
                     <button className="btn-outline w-full">Dashboard</button>
                   </Link>
@@ -150,6 +187,24 @@ export function Header() {
               )}
             </div>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Wheel of Fortune Modal */}
+      <AnimatePresence>
+        {activeWheelSpin && (
+          <WheelOfFortune
+            wheelSpinId={activeWheelSpin.id}
+            spinsRemaining={activeWheelSpin.spinsAllocated - activeWheelSpin.spinsUsed}
+            depositAmount={activeWheelSpin.depositAmount}
+            onClose={() => {
+              setActiveWheelSpin(null);
+              refetchWheelSpins();
+            }}
+            onSpinComplete={() => {
+              refetchWheelSpins();
+            }}
+          />
         )}
       </AnimatePresence>
     </header>

@@ -109,6 +109,7 @@ model User {
   miningBots    MiningBot[]
   referralLinks Referral[] @relation("Referrer")
   asReferred    Referral[] @relation("ReferredUser")
+  wheelSpins    WheelSpin[]
   
   @@index([email])
   @@index([referralCode])
@@ -281,6 +282,41 @@ model SystemConfig {
   
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
+}
+
+// ==================
+// WHEEL OF FORTUNE
+// ==================
+
+model WheelSpin {
+  id              String    @id @default(cuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  depositId       String?
+  spinsAllocated  Int
+  spinsUsed       Int       @default(0)
+  depositAmount   Float     @default(0)
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  history         WheelSpinResult[]
+
+  @@index([userId])
+}
+
+model WheelSpinResult {
+  id            String    @id @default(cuid())
+  wheelSpinId   String
+  wheelSpin     WheelSpin @relation(fields: [wheelSpinId], references: [id], onDelete: Cascade)
+
+  prizeLabel    String
+  prizeAmount   Float
+
+  createdAt     DateTime  @default(now())
+
+  @@index([wheelSpinId])
 }
 
 // ==================

@@ -21,7 +21,7 @@ export default function SignUpPage() {
     signup(
       { email: formData.email, password: formData.password, referralCode: formData.referralCode || undefined },
       {
-        onSuccess: (response) => { setAuth(response); router.push('/dashboard'); },
+        onSuccess: (response) => { setAuth(response); router.push('/dashboard?welcome=1'); },
         onError: (err: any) => { setError(err?.response?.data?.error || err.message || 'Registration failed'); },
       }
     );

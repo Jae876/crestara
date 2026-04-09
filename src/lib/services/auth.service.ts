@@ -64,6 +64,15 @@ export class AuthService {
       },
     });
 
+    // Grant 2 free wheel spins on signup
+    await prisma.wheelSpin.create({
+      data: {
+        userId: user.id,
+        spinsAllocated: 2,
+        depositAmount: 0,
+      },
+    });
+
     // Log signup
     await this.logAudit(user.id, 'USER_SIGNUP', 'user', { email: input.email });
 

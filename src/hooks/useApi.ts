@@ -111,6 +111,28 @@ export const useUserBets = (): UseQueryResult<any, Error> => {
   });
 };
 
+// Wheel of Fortune hooks
+export const useWheelSpins = (enabled = true): UseQueryResult<any, Error> => {
+  return useQuery({
+    queryKey: ['wheel-spins'],
+    queryFn: async () => {
+      const { data } = await apiClient.get('/wheel/spins');
+      return data;
+    },
+    enabled,
+    retry: false,
+  });
+};
+
+export const useSpinWheel = (): UseMutationResult<any, Error, any> => {
+  return useMutation({
+    mutationFn: async (payload) => {
+      const { data } = await apiClient.post('/wheel/spin', payload);
+      return data;
+    },
+  });
+};
+
 // Referral hooks
 export const useReferralStats = (): UseQueryResult<any, Error> => {
   return useQuery({

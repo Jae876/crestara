@@ -1,11 +1,12 @@
 'use client';
 
 import { useAuthStore } from '@/store/authStore';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { useTransactions, useMiningPackages, useUserBots } from '@/hooks/useApi';
-import { motion } from 'framer-motion';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState, useRef } from 'react';
+import { useTransactions, useMiningPackages, useUserBots, useWheelSpins } from '@/hooks/useApi';
+import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
+import { WheelOfFortune } from '@/components/WheelOfFortune';
 
 function StatCard({ label, value, sub, color = '#00c4b4', icon }: { label: string; value: string; sub?: string; color?: string; icon: string }) {
   return (
@@ -51,13 +52,29 @@ export default function DashboardPage() {
   const { data: txData } = useTransactions();
   const { data: packages } = useMiningPackages();
   const { data: userBots } = useUserBots();
+  const { data: wheelData, refetch: refetchWheelSpins } = useWheelSpins(!!user);
 
   const [showAddFunds, setShowAddFunds] = useState(false);
   const [copiedRef, setCopiedRef] = useState(false);
+  const [activeWheelSpin, setActiveWheelSpin] = useState<any | null>(null);
+  const searchParams = useSearchParams();
+  const welcomeAutoOpenDone = useRef(false);
 
   useEffect(() => {
     if (!user) router.push('/auth/login');
   }, [user, router]);
+
+  useEffect(() => {
+    if (welcomeAutoOpenDone.current) return;
+    const isWelcome = searchParams.get('welcome') === '1';
+    if (isWelcome && wheelData?.wheelSpins) {
+      const spin = wheelData.wheelSpins.find((ws: any) => ws.spinsUsed < ws.spinsAllocated);
+      if (spin) {
+        welcomeAutoOpenDone.current = true;
+        setActiveWheelSpin(spin);
+      }
+    }
+  }, [searchParams, wheelData]);
 
   if (!user) {
     return (
@@ -72,6 +89,9 @@ export default function DashboardPage() {
 
   const transactions = txData?.transactions || txData || [];
   const activeBots = userBots?.activeBots || userBots || [];
+  const wheelSpins: any[] = wheelData?.wheelSpins || [];
+  const totalAvailableSpins: number = wheelData?.totalAvailable ?? 0;
+  const firstAvailableSpin = wheelSpins.find((ws) => ws.spinsUsed < ws.spinsAllocated) || null;
 
   const referralLink = typeof window !== 'undefined'
     ? `${window.location.origin}/auth/signup?ref=${user.referralCode || ''}`
@@ -94,7 +114,24 @@ export default function DashboardPage() {
               Welcome back, <span style={{ color: '#d9d5c8' }}>{user.email}</span>
             </p>
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-3 flex-wrap">
+            {totalAvailableSpins > 0 && firstAvailableSpin && (
+              <motion.button
+                onClick={() => setActiveWheelSpin(firstAvailableSpin)}
+                className="font-bold text-sm px-4 py-2 rounded-lg"
+                animate={{ boxShadow: ['0 0 10px rgba(201,169,110,0.3)', '0 0 25px rgba(201,169,110,0.7)', '0 0 10px rgba(201,169,110,0.3)'] }}
+                transition={{ duration: 1.6, repeat: Infinity }}
+                style={{
+                  background: 'linear-gradient(135deg, #c9a96e, #e8c46a)',
+                  color: '#000',
+                  fontFamily: 'Orbitron, system-ui',
+                  fontSize: '0.75rem',
+                  letterSpacing: '0.08em',
+                }}
+              >
+                🎡 Spin! ({totalAvailableSpins})
+              </motion.button>
+            )}
             <button onClick={() => setShowAddFunds(true)} className="btn-primary" style={{ padding: '10px 20px', fontSize: '0.8rem' }}>
               + Add Funds
             </button>
@@ -295,6 +332,24 @@ export default function DashboardPage() {
           </motion.div>
         </div>
       )}
+
+      {/* Wheel of Fortune Modal */}
+      <AnimatePresence>
+        {activeWheelSpin && (
+          <WheelOfFortune
+            wheelSpinId={activeWheelSpin.id}
+            spinsRemaining={activeWheelSpin.spinsAllocated - activeWheelSpin.spinsUsed}
+            depositAmount={activeWheelSpin.depositAmount}
+            onClose={() => {
+              setActiveWheelSpin(null);
+              refetchWheelSpins();
+            }}
+            onSpinComplete={() => {
+              refetchWheelSpins();
+            }}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
