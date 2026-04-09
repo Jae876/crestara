@@ -76,3 +76,5 @@ docker-compose.override.yml
 *.tar.gz
 *.rar
 *.zip
+tsconfig.tsbuildinfo
+*.tsbuildinfo
