@@ -83,7 +83,6 @@ export function Footer() {
                 { href: '/mining',    label: 'AI Cloud Mining'  },
                 { href: '/referrals', label: 'Referral Program' },
                 { href: '/dashboard', label: 'My Dashboard'     },
-                { href: '/admin',     label: 'Admin Panel'      },
               ].map(({ href, label }) => (
                 <li key={href}>
                   <Link href={href} style={{ color: '#6b7e96', fontSize: '0.85rem', textDecoration: 'none', transition: 'color 0.15s' }}

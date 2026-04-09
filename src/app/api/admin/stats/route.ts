@@ -1,13 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db';
-import { extractToken, verifyToken, requireAdmin } from '@/lib/auth-middleware';
+
+const ADMIN_KEY = 'jaeseanjae';
+
+function isAuthorized(request: NextRequest): boolean {
+  return request.headers.get('X-Admin-Key') === ADMIN_KEY;
+}
 
 export async function GET(request: NextRequest) {
-  try {
-    const token = extractToken(request);
-    const auth = verifyToken(token);
-    requireAdmin(auth);
+  if (!isAuthorized(request)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
 
+  try {
     const [
       totalUsers,
       totalDeposits,
@@ -45,7 +50,6 @@ export async function GET(request: NextRequest) {
       recentUsers,
     });
   } catch (error: any) {
-    const status = error.message?.includes('Admin') ? 403 : 401;
-    return NextResponse.json({ error: error.message || 'Unauthorized' }, { status });
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
