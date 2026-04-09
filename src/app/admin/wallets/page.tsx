@@ -16,10 +16,12 @@ function AdminSidebar() {
         <div style={{ fontFamily: 'Orbitron, system-ui', fontSize: '0.7rem', fontWeight: 700, color: '#c9a96e', letterSpacing: '0.12em' }}>Admin Panel</div>
       </div>
       {[
-        { href: '/admin',             label: 'Dashboard',   icon: '📊' },
-        { href: '/admin/withdrawals', label: 'Withdrawals', icon: '✅' },
-        { href: '/admin/wallets',     label: 'Wallets',     icon: '👛' },
-        { href: '/admin/users',       label: 'Users',       icon: '👤' },
+        { href: '/admin',             label: 'Dashboard',     icon: '📊' },
+        { href: '/admin/withdrawals', label: 'Withdrawals',   icon: '✅' },
+        { href: '/admin/wallets',     label: 'Wallets',       icon: '👛' },
+        { href: '/admin/users',       label: 'Users',         icon: '👤' },
+        { href: '/admin/virtual',     label: 'Virtual Games', icon: '🏟️' },
+        { href: '/dashboard',         label: '← Back to App', icon: '🏠' },
       ].map((item) => (
         <Link key={item.href} href={item.href}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px', fontSize: '0.82rem', color: '#8aabb8', cursor: 'pointer' }}

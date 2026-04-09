@@ -24,10 +24,12 @@ function AdminSidebar() {
         <div style={{ fontFamily: 'Orbitron, system-ui', fontSize: '0.7rem', fontWeight: 700, color: '#c9a96e', letterSpacing: '0.12em' }}>Admin Panel</div>
       </div>
       {[
-        { href: '/admin',              label: 'Dashboard',   icon: '📊' },
-        { href: '/admin/withdrawals',  label: 'Withdrawals', icon: '✅' },
-        { href: '/admin/wallets',      label: 'Wallets',     icon: '👛' },
-        { href: '/admin/users',        label: 'Users',       icon: '👤' },
+        { href: '/admin',             label: 'Dashboard',     icon: '📊' },
+        { href: '/admin/withdrawals', label: 'Withdrawals',   icon: '✅' },
+        { href: '/admin/wallets',     label: 'Wallets',       icon: '👛' },
+        { href: '/admin/users',       label: 'Users',         icon: '👤' },
+        { href: '/admin/virtual',     label: 'Virtual Games', icon: '🏟️' },
+        { href: '/dashboard',         label: '← Back to App', icon: '🏠' },
       ].map((item) => (
         <Link key={item.href} href={item.href}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px', fontSize: '0.82rem', color: '#8aabb8', cursor: 'pointer', transition: 'all 0.15s' }}
@@ -91,13 +93,14 @@ function DashboardContent() {
           { href: '/admin/withdrawals', label: 'Approve Withdrawals', icon: '✅', urgent: stats.pendingWithdrawalsCount > 0, count: stats.pendingWithdrawalsCount },
           { href: '/admin/wallets',     label: 'Manage Wallets',      icon: '👛', urgent: false },
           { href: '/admin/users',       label: 'Manage Users',        icon: '👤', urgent: false },
+          { href: '/admin/virtual',     label: 'Virtual Games',       icon: '🏟️', urgent: false },
         ].map((a) => (
           <Link key={a.href} href={a.href}>
             <div style={{ background: a.urgent ? 'rgba(245,101,101,0.1)' : 'rgba(0,196,180,0.07)', border: `1px solid ${a.urgent ? 'rgba(245,101,101,0.3)' : 'rgba(0,196,180,0.2)'}`, borderRadius: 12, padding: '16px 18px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12 }}>
               <span style={{ fontSize: 20 }}>{a.icon}</span>
               <span style={{ fontFamily: 'Orbitron, system-ui', fontSize: '0.75rem', fontWeight: 700, color: a.urgent ? '#f56565' : '#00c4b4', letterSpacing: '0.04em' }}>
                 {a.label}
-                {a.urgent && a.count > 0 && <span style={{ marginLeft: 6, background: '#f56565', color: '#fff', borderRadius: 10, padding: '1px 6px', fontSize: '0.6rem' }}>{a.count}</span>}
+                {a.urgent && (a as any).count > 0 && <span style={{ marginLeft: 6, background: '#f56565', color: '#fff', borderRadius: 10, padding: '1px 6px', fontSize: '0.6rem' }}>{(a as any).count}</span>}
               </span>
             </div>
           </Link>

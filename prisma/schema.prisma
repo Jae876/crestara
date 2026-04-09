@@ -110,6 +110,7 @@ model User {
   referralLinks Referral[] @relation("Referrer")
   asReferred    Referral[] @relation("ReferredUser")
   wheelSpins    WheelSpin[]
+  virtualBets   VirtualBet[]
   
   @@index([email])
   @@index([referralCode])
@@ -317,6 +318,99 @@ model WheelSpinResult {
   createdAt     DateTime  @default(now())
 
   @@index([wheelSpinId])
+}
+
+// ==================
+// VIRTUAL SPORTS
+// ==================
+
+enum VirtualSportType {
+  FOOTBALL
+  BASKETBALL
+  HORSE_RACING
+  DOG_RACING
+  TENNIS
+  MOTOR_RACING
+}
+
+enum VirtualEventStatus {
+  UPCOMING
+  LIVE
+  SETTLED
+}
+
+enum VirtualBetStatus {
+  PENDING
+  WON
+  LOST
+}
+
+model VirtualSport {
+  id          String          @id @default(cuid())
+  sportType   VirtualSportType @unique
+  isEnabled   Boolean         @default(true)
+  minBet      Float           @default(0.50)
+  maxBet      Float           @default(1000)
+  oddsConfig  Json            // JSON object mapping market keys to odds
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  events      VirtualEvent[]
+
+  @@index([sportType])
+}
+
+model VirtualEvent {
+  id            String             @id @default(cuid())
+  sportId       String
+  sport         VirtualSport       @relation(fields: [sportId], references: [id], onDelete: Cascade)
+  sportType     VirtualSportType
+  participants  Json               // Array of participant names/teams
+  startTime     DateTime
+  status        VirtualEventStatus @default(UPCOMING)
+  outcome       String?            // Winning outcome key, set when SETTLED
+  resultDetails Json?              // Full result breakdown
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  markets       VirtualMarket[]
+  bets          VirtualBet[]
+
+  @@index([sportType])
+  @@index([status])
+  @@index([startTime])
+}
+
+model VirtualMarket {
+  id          String       @id @default(cuid())
+  eventId     String
+  event       VirtualEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  name        String       // e.g. "Match Result", "Top Finisher"
+  options     Json         // Array of { key, label, odds }
+  isOpen      Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  bets        VirtualBet[]
+
+  @@index([eventId])
+}
+
+model VirtualBet {
+  id          String          @id @default(cuid())
+  userId      String
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  eventId     String
+  event       VirtualEvent    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  marketId    String
+  market      VirtualMarket   @relation(fields: [marketId], references: [id], onDelete: Cascade)
+  selection   String          // The option key selected
+  odds        Float           // Odds at time of bet
+  betAmount   Float
+  payout      Float           @default(0)
+  status      VirtualBetStatus @default(PENDING)
+  createdAt   DateTime        @default(now())
+  settledAt   DateTime?
+
+  @@index([userId])
+  @@index([eventId])
+  @@index([status])
 }
 
 // ==================

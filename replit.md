@@ -62,6 +62,11 @@ src/
 ## Key Features
 
 - Provably fair casino (Crash, Plinko, Dice, Mines, Keno, Coinflip, Slots)
+- Virtual Sports betting (Football, Basketball, Horse Racing, Dog Racing, Tennis, Motor Racing)
+  - Events auto-generated every 2-5 minutes per sport
+  - Seeded RNG for fair outcomes, countdown timers, market odds
+  - Bet slip, balance deduction, auto-payout on win
+  - Admin panel at /admin/virtual to enable/disable sports, set limits, view all bets
 - AI cloud mining bots with daily balance credits
 - Referral program: $2 per qualifying referral
 - 300% first-deposit bonus + 2 free spins
