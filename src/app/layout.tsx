@@ -3,14 +3,15 @@ import './globals.css';
 import { Providers } from './providers';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
+import { ChatWidget } from '@/components/ChatWidget';
 
 export const metadata: Metadata = {
-  title: 'Crestara — Premium Crypto Casino & Cloud Mining',
-  description: 'High-performance crypto casino with AI-powered cloud mining bots. Deposit 130+ cryptos. Trade, mine, earn.',
+  title: 'Crestara — Premium Crypto Casino & AI Cloud Mining',
+  description: 'Institutional-grade crypto casino with AI-powered cloud mining bots. 300% welcome bonus. Daily payouts. Instant crypto withdrawals.',
   icons: { icon: '/favicon.ico' },
   openGraph: {
-    title: 'Crestara — Premium Crypto Casino & Cloud Mining',
-    description: 'High-performance crypto casino with AI-powered cloud mining bots.',
+    title: 'Crestara — Premium Crypto Casino & AI Cloud Mining',
+    description: 'Institutional-grade crypto casino with AI-powered cloud mining bots.',
     type: 'website',
   },
 };
@@ -25,6 +26,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             {children}
           </main>
           <Footer />
+          <ChatWidget />
         </Providers>
       </body>
     </html>

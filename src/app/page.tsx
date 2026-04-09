@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { CrestanaLogo } from '@/components/CrestanaLogo';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
+import { useAuthStore } from '@/store/authStore';
 
 const PLATFORM_STATS = [
   { label: 'Active Users',    value: '48,291+',  icon: '👥', color: '#00c4b4' },
@@ -30,11 +31,12 @@ const GAMES = [
 ];
 
 const MINING_PLANS = [
-  { id: 'STARTER',  label: 'Starter',  price: 10,  daily: 0.50,  days: 90,  total: 45,    color: '#00c4b4', popular: false },
-  { id: 'BASIC',    label: 'Basic',    price: 50,  daily: 2.50,  days: 90,  total: 225,   color: '#1e90ff', popular: false },
-  { id: 'STANDARD', label: 'Standard', price: 100, daily: 5.00,  days: 120, total: 600,   color: '#c9a96e', popular: true  },
-  { id: 'ADVANCED', label: 'Advanced', price: 250, daily: 12.50, days: 150, total: 1875,  color: '#f56565', popular: false },
-  { id: 'ELITE',    label: 'Elite',    price: 500, daily: 25.00, days: 180, total: 4500,  color: '#ffd700', popular: false },
+  { id: 'STARTER',  label: 'Starter',  price: 10,   daily: 0.50,  days: 90,  total: 45,    color: '#00c4b4', popular: false, diamond: false },
+  { id: 'BASIC',    label: 'Basic',    price: 50,   daily: 2.50,  days: 90,  total: 225,   color: '#1e90ff', popular: false, diamond: false },
+  { id: 'STANDARD', label: 'Standard', price: 100,  daily: 5.00,  days: 120, total: 600,   color: '#c9a96e', popular: true,  diamond: false },
+  { id: 'ADVANCED', label: 'Advanced', price: 250,  daily: 12.50, days: 150, total: 1875,  color: '#f56565', popular: false, diamond: false },
+  { id: 'ELITE',    label: 'Elite',    price: 500,  daily: 25.00, days: 180, total: 4500,  color: '#ffd700', popular: false, diamond: false },
+  { id: 'DIAMOND',  label: 'Diamond',  price: 1000, daily: 55.00, days: 365, total: 20075, color: '#a855f7', popular: false, diamond: true  },
 ];
 
 const TESTIMONIALS = [
@@ -98,6 +100,8 @@ const fadeUp = {
 
 export default function Home() {
   const [mounted, setMounted] = useState(false);
+  const { user } = useAuthStore();
+  const playHref = user ? '/casino' : '/auth/signup';
   useEffect(() => setMounted(true), []);
 
   return (
@@ -231,10 +235,10 @@ export default function Home() {
                 <div className="text-4xl mb-4">{g.icon}</div>
                 <h3 className="text-lg font-bold mb-2" style={{ fontFamily: 'Orbitron, system-ui' }}>{g.name}</h3>
                 <p className="text-sm mb-5" style={{ color: '#6b7e96' }}>{g.desc}</p>
-                <Link href="/casino">
+                <Link href={playHref}>
                   <button className="text-xs font-bold px-4 py-2 rounded-lg w-full transition-all"
                     style={{ background: 'linear-gradient(135deg, #00c4b4, #1e90ff)', color: '#fff', fontFamily: 'Orbitron, system-ui', letterSpacing: '0.06em' }}>
-                    Play Now
+                    {user ? 'Play Now' : 'Sign Up & Play'}
                   </button>
                 </Link>
               </motion.div>
@@ -283,15 +287,14 @@ export default function Home() {
           </div>
 
           {/* Pricing grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5">
-            {MINING_PLANS.map((pkg, i) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-5">
+            {MINING_PLANS.filter((p) => !p.diamond).map((pkg, i) => (
               <motion.div key={pkg.id}
                 className={`relative rounded-2xl p-6 ${pkg.popular ? 'card-gold card' : 'card'}`}
                 initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }} transition={{ delay: i * 0.08 }}
                 whileHover={{ y: -5 }}
                 style={{ borderColor: pkg.popular ? 'rgba(201,169,110,0.45)' : `${pkg.color}25` }}>
-
                 {pkg.popular && (
                   <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 whitespace-nowrap">
                     <span className="px-3 py-1 rounded-full text-xs font-black"
@@ -300,11 +303,9 @@ export default function Home() {
                     </span>
                   </div>
                 )}
-
                 <h3 className="font-black mb-1 text-base" style={{ fontFamily: 'Orbitron, system-ui', color: pkg.color }}>{pkg.label}</h3>
                 <div className="text-3xl font-black mb-1" style={{ fontFamily: 'Orbitron, system-ui', color: '#fff' }}>${pkg.price}</div>
                 <div className="text-xs mb-4" style={{ color: '#4a5a6a' }}>one-time</div>
-
                 <div className="space-y-2 mb-5 text-xs">
                   <div className="flex justify-between">
                     <span style={{ color: '#6b7e96' }}>Daily</span>
@@ -320,7 +321,6 @@ export default function Home() {
                     <span className="font-bold" style={{ color: '#c9a96e' }}>${pkg.total.toLocaleString()}</span>
                   </div>
                 </div>
-
                 <Link href="/auth/signup">
                   <button className={`w-full py-2.5 rounded-xl text-xs font-bold transition-all ${pkg.popular ? 'btn-gold' : 'btn-primary'}`}
                     style={{ fontFamily: 'Orbitron, system-ui', letterSpacing: '0.05em' }}>
@@ -330,6 +330,58 @@ export default function Home() {
               </motion.div>
             ))}
           </div>
+
+          {/* Diamond tier — full-width premium card */}
+          {MINING_PLANS.filter((p) => p.diamond).map((pkg) => (
+            <motion.div key={pkg.id}
+              initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }} transition={{ delay: 0.4 }}
+              whileHover={{ y: -3 }}
+              style={{
+                position: 'relative', borderRadius: 20, padding: '28px 32px',
+                background: 'linear-gradient(135deg, rgba(168,85,247,0.1) 0%, rgba(13,32,64,0.9) 50%, rgba(168,85,247,0.06) 100%)',
+                border: '1px solid rgba(168,85,247,0.4)',
+                boxShadow: '0 0 40px rgba(168,85,247,0.12)',
+                marginBottom: 4,
+              }}>
+              <div style={{ position: 'absolute', top: -13, left: '50%', transform: 'translateX(-50%)', whiteSpace: 'nowrap' }}>
+                <span style={{ padding: '4px 16px', borderRadius: 20, fontFamily: 'Orbitron, system-ui', fontSize: '0.62rem', fontWeight: 900, letterSpacing: '0.12em', background: 'linear-gradient(135deg, #a855f7, #7c3aed)', color: '#fff' }}>
+                  💎 DIAMOND · INSTITUTIONAL TIER
+                </span>
+              </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 24, alignItems: 'center', justifyContent: 'space-between' }}>
+                <div>
+                  <h3 style={{ fontFamily: 'Orbitron, system-ui', fontSize: '1.5rem', fontWeight: 900, color: '#a855f7', marginBottom: 4 }}>Diamond Bot</h3>
+                  <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginTop: 8 }}>
+                    {[
+                      { label: 'Daily Earnings', value: `$${pkg.daily.toFixed(2)}`, color: '#a855f7' },
+                      { label: 'Duration',        value: `${pkg.days} days`,        color: '#fff'    },
+                      { label: 'Est. Return',     value: `$${pkg.total.toLocaleString()}`, color: '#c9a96e' },
+                    ].map((s) => (
+                      <div key={s.label} style={{ minWidth: 100 }}>
+                        <div style={{ fontSize: '0.68rem', color: '#4a5a6a', marginBottom: 2, fontFamily: 'Orbitron, system-ui', letterSpacing: '0.06em', textTransform: 'uppercase' }}>{s.label}</div>
+                        <div style={{ fontFamily: 'Orbitron, system-ui', fontWeight: 900, fontSize: '1.1rem', color: s.color }}>{s.value}</div>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ marginTop: 12, display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                    {['All 6 coins', 'Private VIP group', 'Dedicated account manager', 'Priority withdrawals', 'API access'].map((f) => (
+                      <span key={f} style={{ fontSize: '0.68rem', padding: '3px 10px', borderRadius: 8, background: 'rgba(168,85,247,0.1)', border: '1px solid rgba(168,85,247,0.25)', color: '#c4a0f0' }}>{f}</span>
+                    ))}
+                  </div>
+                </div>
+                <div style={{ textAlign: 'center', flexShrink: 0 }}>
+                  <div style={{ fontFamily: 'Orbitron, system-ui', fontSize: '2.5rem', fontWeight: 900, color: '#fff', marginBottom: 4 }}>$1,000</div>
+                  <div style={{ fontSize: '0.72rem', color: '#4a5a6a', marginBottom: 16 }}>one-time · lifetime support</div>
+                  <Link href="/auth/signup">
+                    <button style={{ padding: '14px 36px', borderRadius: 12, fontFamily: 'Orbitron, system-ui', fontSize: '0.78rem', fontWeight: 900, letterSpacing: '0.08em', background: 'linear-gradient(135deg, #a855f7, #7c3aed)', color: '#fff', border: 'none', cursor: 'pointer', boxShadow: '0 4px 20px rgba(168,85,247,0.3)', transition: 'all 0.2s' }}>
+                      💎 Activate Diamond Bot
+                    </button>
+                  </Link>
+                </div>
+              </div>
+            </motion.div>
+          ))}
 
           <div className="text-center mt-8">
             <Link href="/mining">
@@ -394,6 +446,66 @@ export default function Home() {
               </motion.div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* ── STAKE PARTNERSHIP ── */}
+      <section className="py-16 px-4" style={{ background: 'rgba(6,13,23,0.7)', borderTop: '1px solid #1a3050' }}>
+        <div className="max-w-5xl mx-auto">
+          <motion.div className="text-center mb-10"
+            initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+            <p className="text-xs tracking-widest uppercase mb-3" style={{ color: '#4a5a6a', fontFamily: 'Orbitron, system-ui' }}>Strategic Partnership</p>
+            <h2 className="text-2xl md:text-3xl font-bold mb-3" style={{ fontFamily: 'Orbitron, system-ui', color: '#fff' }}>
+              Powered by <span style={{ color: '#00c4b4' }}>Stake</span> Infrastructure
+            </h2>
+            <p style={{ color: '#6b7e96', fontSize: '0.9rem', maxWidth: 560, margin: '0 auto' }}>
+              Crestara operates in strategic partnership with Stake — the world's largest crypto casino by volume — leveraging their proven gaming infrastructure, liquidity networks, and compliance frameworks.
+            </p>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+            style={{ background: 'linear-gradient(135deg, rgba(0,196,180,0.06), rgba(13,32,64,0.6), rgba(30,144,255,0.06))', border: '1px solid rgba(0,196,180,0.15)', borderRadius: 20, padding: '36px 40px' }}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
+                  <div style={{ width: 52, height: 52, borderRadius: 14, background: 'rgba(0,196,180,0.1)', border: '1px solid rgba(0,196,180,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem' }}>
+                    ♠
+                  </div>
+                  <div>
+                    <div style={{ fontFamily: 'Orbitron, system-ui', fontWeight: 900, fontSize: '1.1rem', color: '#fff' }}>Stake Partnership</div>
+                    <div style={{ fontSize: '0.72rem', color: '#00c4b4' }}>Verified Technology Partner · Est. 2024</div>
+                  </div>
+                </div>
+                <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {[
+                    'Shared gaming engine & provably-fair RNG certification',
+                    'Joint liquidity pools for instant crypto settlements',
+                    'Unified KYC/AML compliance infrastructure',
+                    'Exclusive access to Stake VIP player ecosystem',
+                  ].map((f) => (
+                    <li key={f} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: '0.82rem', color: '#8aabb8' }}>
+                      <span style={{ color: '#00c4b4', marginTop: 1, flexShrink: 0 }}>✓</span>
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                {[
+                  { label: 'Monthly Volume', value: '$6.2B+', color: '#00c4b4' },
+                  { label: 'Partner Since',  value: '2024',   color: '#c9a96e' },
+                  { label: 'Shared Users',   value: '3.1M+',  color: '#1e90ff' },
+                  { label: 'Uptime SLA',     value: '99.98%', color: '#48bb78' },
+                ].map((s) => (
+                  <div key={s.label} style={{ background: 'rgba(13,32,64,0.6)', border: '1px solid #1a3050', borderRadius: 12, padding: '16px 18px', textAlign: 'center' }}>
+                    <div style={{ fontFamily: 'Orbitron, system-ui', fontWeight: 900, fontSize: '1.3rem', color: s.color, marginBottom: 4 }}>{s.value}</div>
+                    <div style={{ fontSize: '0.65rem', color: '#4a5a6a', textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: 'Orbitron, system-ui' }}>{s.label}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </motion.div>
         </div>
       </section>
 

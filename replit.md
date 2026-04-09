@@ -10,6 +10,7 @@ Premium crypto casino and AI-powered cloud mining platform built with Next.js 14
 - **State**: Zustand (auth), TanStack Query (server data)
 - **Animations**: Framer Motion
 - **Auth**: JWT (access + refresh tokens), bcrypt
+- **GitHub Remote**: https://github.com/Jae876/crestara (requires PAT to push)
 
 ## Project Structure
 

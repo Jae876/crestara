@@ -91,6 +91,32 @@ const PACKAGES = [
     popular: false,
     badge: 'BEST VALUE',
   },
+  {
+    id: 'DIAMOND',
+    label: 'Diamond',
+    price: 1000,
+    daily: 55.00,
+    days: 365,
+    total: 20075,
+    hashrate: '1 PH/s',
+    coins: ['BTC', 'LTC', 'DOGE', 'ETH', 'XMR', 'RVN'],
+    features: [
+      'Institutional 1 PH/s hashrate',
+      'All 6 coins + auto-switching AI',
+      'Daily $55 auto-credit',
+      '365-day duration',
+      'Private VIP group access',
+      'Dedicated senior account manager',
+      'API access for integration',
+      'Priority withdrawal processing',
+      'Monthly compliance report',
+      'Exclusive market intelligence feed',
+    ],
+    color: '#a855f7',
+    gradient: 'linear-gradient(135deg, #a855f7, #7c3aed)',
+    popular: false,
+    badge: '💎 DIAMOND',
+  },
 ];
 
 const STATS = [
