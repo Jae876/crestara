@@ -1,0 +1,67 @@
+ow that we’ve settled on Crestara as the brand name, with the futuristic logo style we’ve been refining (large prominent C integrated with vertical blade-like pillars splitting through the center, encircled by a high-tech ring with circuit patterns, metallic chrome/silver finish, neon blue/gold glow accents, orbiting crypto coins for dynamism, and overall premium sci-fi elite vibe), here’s the regenerated full engineering prompt updated with the exact name and logo integration.
+This prompt is ready to paste into an AI code generator (Claude, Cursor, GPT-4o, etc.) to build the platform skeleton.
+Regenerated Prompt:
+“Act as a senior full-stack engineer with 10+ years building fintech, iGaming, and crypto platforms. Design and generate a complete, production-grade web application skeleton for a hybrid crypto casino + cloud mining platform named Crestara. The brand aesthetic is ultra-futuristic and sophisticated: dark cosmic/neon theme (deep black/navy backgrounds #0A0E12 to #001F3F, metallic silver/chrome #D9D5C8, neon teal/blue #00C4B4 to #1E90FF gradients, subtle gold #C9A96E accents). Integrate the logo prominently: a large stylized C symbol with vertical blade/pillar structures splitting the center (twin angled || coming out from both top and bottom), encircled by a high-tech ring with circuit board patterns, glowing effects, and subtle orbiting crypto coin elements. Use this logo description in the UI code (header, favicon, loading screens, etc.) — assume SVG or PNG placeholder with the description for now.
+Tech stack:
+Frontend: Next.js 14+ (App Router), TypeScript, Tailwind CSS (custom dark/neon theme), framer-motion for animations, React Query/SWR for data, Zustand for state.
+Backend: NestJS (preferred for structure) or Node/Express, Prisma ORM with PostgreSQL, Redis for caching/sessions/queues.
+Auth: JWT + refresh tokens, email/password only (no wallet connect), Argon2 hashing, Zod validation.
+Deployment-ready: Vercel (frontend), Railway/Fly.io/Docker (backend).
+Core Requirements & Architecture:
+Branding & UI Consistency
+Global dark futuristic theme: neon glows on hovers/buttons, particle effects on wins/mining credits (framer-motion or ts-particles).
+Logo: Place large Crestara logo (big C with vertical blades top/bottom, circuit ring, crypto orbit hints) in header, footer, login, dashboard hero. Add subtle animation: faint glow pulse or orbiting coin trail.
+Typography: Futuristic sans-serif (e.g., Orbitron/Exo 2 for headings), clean sans for body.
+Authentication & Users
+Email/password sign-up/login + OTP verification.
+Roles: USER, ADMIN.
+Prisma schema: User (id, email, passwordHash, role, balanceUSD, referralCode, referredById, createdAt, kycStatus), relations to Transactions, Bonuses, Referrals, MiningBots, Bets.
+Funding / Add Funds (130+ Cryptos - Exodus-style)
+Dashboard header: Real balance badge (USD equiv + breakdown).
+‘Add Funds’ modal: Searchable dropdown with 130+ coins (BTC, ETH, SOL, USDT, USDC, BNB, ADA, DOGE, XMR, LTC, RVN, ZEC, XRP, TRX, LINK, MATIC, DOT, AVAX + ERC-20/BEP-20/SPL tokens — use CoinGecko API for live prices/logos/networks).
+On select: Show price, network, generate unique deposit address/QR (backend placeholder: Tatum.io / custom listener).
+Webhook/cron credits balance on confirmation.
+Transactions model: type (DEPOSIT/WITHDRAW), coin, amount, txHash, status.
+Welcome Bonus & Free Spins
+First deposit ≥ $10 equiv: 300% match to bonus balance (40x wagering on games).
+Sign-up: 2 FREE SPINS ($1 each) on featured slot, wins to bonus.
+Referral Program
+Unique link (?ref=CODE).
+$2 credit (USDT/balance) when referred user deposits ≥ $10 equiv AND bets or activates bot.
+Referrals table + dashboard stats.
+Casino / Games
+Categories: Provably Fair Originals (Crash, Plinko, Dice, Mines, Coinflip, Keno — crypto-js or provably-fair lib, verify tool).
+Slots/Live/Table: API placeholders (Pragmatic, BGaming, Evolution iframes/SDK).
+Bets model: gameType, betAmount, outcome, payout.
+House edge logic in backend.
+AI Cloud Mining Bots
+Packages: Basic $5 → $0.50 daily (90 days), Pro $10 → $1 daily (120 days).
+
+Coin-specific: BTC (SHA-256 ASIC), XMR (RandomX CPU), LTC (Scrypt), DOGE (Scrypt ASIC), RVN (KAWPOW GPU), ZEC (Equihash).
+User buys bot (balance deduct), selects coin.
+Cron (daily): Credit earnings (mock yields or API-adjusted).
+MiningBots model: packageType, coin, activation/endDate, dailyRate, totalMined.
+Admin Dashboard (/admin - role protected)
+Overview: Users count, balances, deposits/withdrawals, bot activations, casino revenue.
+Users: List/search, edit balance, ban, view history (tx, bets, bots, referrals).
+Transactions: Monitor/approve/reject.
+Bonuses/Referrals/Mining: Global configs, manual adjustments.
+Games: Enable/disable, house edge tweaks.
+Reports: Charts (Recharts), CSV exports.
+TanStack Table for data grids.
+Production Features
+Security: Rate limiting, helmet, CSRF, logging (Pino).
+Real-time: Socket.io (wins feed, mining notifications).
+APIs: CoinGecko prices, Tatum/blockchain placeholders.
+Cron: Mining payouts, bonus expiry, tx confirmations.
+UI: Confetti on wins, urgency timers, mobile-responsive, PWA.
+Provide:
+Folder structure (src/app, components, lib, api, prisma/schema.prisma).
+Key files: layout.tsx (with Crestara logo), dashboard page, admin layout, AddFunds modal, MiningBotPurchase, ProvablyFair verify.
+use the best  schema that integrates easily when deployed .
+NestJS examples: deposit controller, mining cron service.
+Env vars setup (DB, JWT_SECRET, ).
+Output production-ready skeleton — focus on types, structure, real integration points for crypto/funding/mining/casino. No mocks; design for live usage with secure persistence.”
+This prompt now fully incorporates Crestara as the name and embeds the logo style we’ve iterated on (big C with top/bottom vertical blades/pillars, circuit ring, crypto coins, futuristic glow). If you want any final tweaks before running it (e.g., add specific games, change bonus details, or emphasize certain features), let me know! 
+
+logo in attachment 

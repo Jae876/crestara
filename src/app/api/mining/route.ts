@@ -3,10 +3,9 @@ import prisma from '@/lib/db';
 import { extractToken, verifyToken } from '@/lib/auth-middleware';
 import { MiningBotPurchaseSchema } from '@crestara/shared';
 
-const MINING_PACKAGE_PRICES: Record<string, number> = {
-  BASIC: 19.99,
-  PRO: 99.99,
-  ELITE: 499.99,
+const PACKAGES: Record<string, { price: number; dailyRate: number; days: number; description: string }> = {
+  BASIC: { price: 5,  dailyRate: 0.50, days: 90,  description: 'Entry-level bot. BTC, LTC, DOGE support.' },
+  PRO:   { price: 10, dailyRate: 1.00, days: 120, description: 'Pro bot. All 6 coins. Coin-switching AI.' },
 };
 
 export async function GET(request: NextRequest) {
@@ -14,28 +13,20 @@ export async function GET(request: NextRequest) {
     const token = extractToken(request);
     const auth = verifyToken(token);
 
-    // Get user's active mining bots
     const bots = await prisma.miningBot.findMany({
-      where: {
-        userId: auth.sub,
-        status: 'ACTIVE',
-      },
+      where: { userId: auth.sub },
+      orderBy: { createdAt: 'desc' },
     });
 
     return NextResponse.json({
-      message: 'Mining packages',
-      packages: [
-        { type: 'BASIC', price: MINING_PACKAGE_PRICES.BASIC, dailyRate: 0.50 },
-        { type: 'PRO', price: MINING_PACKAGE_PRICES.PRO, dailyRate: 3.00 },
-        { type: 'ELITE', price: MINING_PACKAGE_PRICES.ELITE, dailyRate: 20.00 },
-      ],
+      packages: Object.entries(PACKAGES).map(([type, pkg]) => ({ type, ...pkg })),
       activeBots: bots,
     });
-  } catch (error: any) {
-    return NextResponse.json(
-      { error: error.message || 'Failed to fetch mining packages' },
-      { status: 401 },
-    );
+  } catch {
+    return NextResponse.json({
+      packages: Object.entries(PACKAGES).map(([type, pkg]) => ({ type, ...pkg })),
+      activeBots: [],
+    });
   }
 }
 
@@ -47,66 +38,54 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validated = MiningBotPurchaseSchema.parse(body);
 
-    const price = MINING_PACKAGE_PRICES[validated.packageType];
-    if (!price) {
-      return NextResponse.json(
-        { error: 'Invalid package type' },
-        { status: 400 },
-      );
+    const pkg = PACKAGES[validated.packageType];
+    if (!pkg) {
+      return NextResponse.json({ error: 'Invalid package type' }, { status: 400 });
     }
 
-    // Check user balance
-    const user = await prisma.user.findUnique({
-      where: { id: auth.sub },
-    });
-
-    if (!user || user.balanceUSD < price) {
-      return NextResponse.json(
-        { error: 'Insufficient balance' },
-        { status: 400 },
-      );
+    const user = await prisma.user.findUnique({ where: { id: auth.sub } });
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+    if (user.balanceUSD < pkg.price) {
+      return NextResponse.json({ error: `Insufficient balance. Need $${pkg.price}, have $${user.balanceUSD.toFixed(2)}` }, { status: 400 });
     }
 
-    // Create mining bot
     const endDate = new Date();
-    endDate.setDate(endDate.getDate() + 365); // 1 year contract
+    endDate.setDate(endDate.getDate() + pkg.days);
 
-    const bot = await prisma.miningBot.create({
-      data: {
-        userId: auth.sub,
-        packageType: validated.packageType as any,
-        coin: validated.coin as any,
-        endDate,
-        dailyRate: MINING_PACKAGE_PRICES[validated.packageType] / 365, // Simplistic rate
-      },
-    });
+    const [bot] = await prisma.$transaction([
+      prisma.miningBot.create({
+        data: {
+          userId: auth.sub,
+          packageType: validated.packageType as any,
+          coin: validated.coin as any,
+          endDate,
+          dailyRate: pkg.dailyRate,
+          totalMined: 0,
+        },
+      }),
+      prisma.user.update({
+        where: { id: auth.sub },
+        data: { balanceUSD: { decrement: pkg.price } },
+      }),
+      prisma.transaction.create({
+        data: {
+          userId: auth.sub,
+          type: 'DEPOSIT',
+          status: 'CONFIRMED',
+          coinSymbol: 'USD',
+          amount: pkg.price,
+          amountUSD: pkg.price,
+        },
+      }),
+    ]);
 
-    // Deduct payment
-    await prisma.user.update({
-      where: { id: auth.sub },
-      data: { balanceUSD: { decrement: price } },
-    });
-
-    // Create transaction record
-    await prisma.transaction.create({
-      data: {
-        userId: auth.sub,
-        type: 'DEPOSIT',
-        status: 'CONFIRMED',
-        coinSymbol: validated.coin,
-        amount: price,
-        amountUSD: price,
-      },
-    });
-
-    return NextResponse.json(
-      { message: 'Mining bot activated', bot },
-      { status: 201 },
-    );
+    return NextResponse.json({ message: 'Mining bot activated', bot }, { status: 201 });
   } catch (error: any) {
-    return NextResponse.json(
-      { error: error.message || 'Failed to purchase mining bot' },
-      { status: 400 },
-    );
+    if (error.name === 'ZodError') {
+      return NextResponse.json({ error: 'Invalid request data', details: error.errors }, { status: 422 });
+    }
+    return NextResponse.json({ error: error.message || 'Failed to purchase mining bot' }, { status: 500 });
   }
 }

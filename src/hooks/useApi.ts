@@ -121,3 +121,13 @@ export const useReferralStats = (): UseQueryResult<any, Error> => {
     },
   });
 };
+
+export const useReferrals = (): UseQueryResult<any, Error> => {
+  return useQuery({
+    queryKey: ['referrals'],
+    queryFn: async () => {
+      const { data } = await apiClient.get('/referral/list');
+      return data;
+    },
+  });
+};

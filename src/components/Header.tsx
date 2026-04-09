@@ -2,110 +2,156 @@
 
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { CrestanaLogo } from './CrestanaLogo';
 import { useAuthStore } from '@/store/authStore';
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const { user, logout } = useAuthStore();
 
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', onScroll);
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  const navLinks = [
+    { href: '/casino', label: 'Casino' },
+    { href: '/mining', label: 'Mining' },
+    { href: '/referrals', label: 'Referrals' },
+  ];
+
   return (
-    <header className="fixed w-full top-0 z-50 bg-gradient-to-b from-crestara-dark via-crestara-blue to-transparent backdrop-blur border-b border-crestara-border">
-      <nav className="max-w-7xl mx-auto px-4 md:px-8 py-4 flex items-center justify-between">
+    <header
+      className="fixed w-full top-0 z-50 transition-all duration-300"
+      style={{
+        background: scrolled
+          ? 'rgba(6,13,23,0.95)'
+          : 'linear-gradient(to bottom, rgba(6,13,23,0.9), transparent)',
+        backdropFilter: scrolled ? 'blur(16px)' : 'none',
+        borderBottom: scrolled ? '1px solid rgba(26,48,80,0.8)' : '1px solid transparent',
+      }}
+    >
+      <nav className="max-w-7xl mx-auto px-4 md:px-8 h-16 flex items-center justify-between">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition">
-          <CrestanaLogo size="small" />
-          <span className="text-xl font-bold neon-text hidden sm:inline">CRESTARA</span>
+        <Link href="/" className="flex items-center gap-3 group" onClick={() => setIsMenuOpen(false)}>
+          <CrestanaLogo size="small" animated={false} />
+          <span
+            className="text-lg font-bold tracking-widest hidden sm:inline"
+            style={{
+              fontFamily: 'Orbitron, system-ui, sans-serif',
+              background: 'linear-gradient(135deg, #8aa0b0, #eef2f4, #8aa0b0)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+            }}
+          >
+            CRESTARA
+          </span>
         </Link>
 
-        {/* Desktop Menu */}
+        {/* Desktop nav */}
         <div className="hidden md:flex items-center gap-8">
-          <Link href="/casino" className="hover:text-crestara-teal transition">
-            Casino
-          </Link>
-          <Link href="/mining" className="hover:text-crestara-teal transition">
-            Mining
-          </Link>
-          <Link href="/referrals" className="hover:text-crestara-teal transition">
-            Referrals
-          </Link>
+          {navLinks.map(({ href, label }) => (
+            <Link
+              key={href}
+              href={href}
+              className="text-sm font-medium text-gray-400 hover:text-white transition-colors duration-200 tracking-wide"
+              style={{ fontFamily: 'Orbitron, system-ui, sans-serif', fontSize: '0.78rem', letterSpacing: '0.1em' }}
+            >
+              {label}
+            </Link>
+          ))}
+
           {user ? (
-            <>
-              <Link href="/dashboard" className="hover:text-crestara-teal transition">
-                Dashboard
+            <div className="flex items-center gap-3">
+              <Link href="/dashboard">
+                <button className="btn-outline" style={{ padding: '8px 20px', fontSize: '0.75rem' }}>
+                  Dashboard
+                </button>
               </Link>
               <button
                 onClick={logout}
-                className="px-4 py-2 bg-red-600 rounded hover:bg-red-700 transition"
+                className="text-sm text-gray-500 hover:text-red-400 transition-colors"
+                style={{ fontFamily: 'Orbitron, system-ui, sans-serif', fontSize: '0.75rem', letterSpacing: '0.08em' }}
               >
                 Logout
               </button>
-            </>
+            </div>
           ) : (
-            <>
+            <div className="flex items-center gap-3">
               <Link href="/auth/login">
-                <button className="px-4 py-2 border border-crestara-teal text-crestara-teal rounded hover:bg-crestara-teal hover:text-crestara-dark transition">
+                <button className="btn-outline" style={{ padding: '8px 20px', fontSize: '0.75rem' }}>
                   Login
                 </button>
               </Link>
               <Link href="/auth/signup">
-                <button className="px-4 py-2 bg-gradient-neon text-white rounded hover:shadow-glow transition">
+                <button className="btn-primary" style={{ padding: '8px 20px', fontSize: '0.75rem' }}>
                   Sign Up
                 </button>
               </Link>
-            </>
+            </div>
           )}
         </div>
 
-        {/* Mobile Menu Button */}
+        {/* Mobile hamburger */}
         <button
-          className="md:hidden text-2xl"
+          className="md:hidden flex flex-col gap-1.5 p-2 rounded"
           onClick={() => setIsMenuOpen(!isMenuOpen)}
+          aria-label="Toggle menu"
         >
-          ☰
+          <span className={`block w-6 h-0.5 bg-white transition-all duration-200 ${isMenuOpen ? 'rotate-45 translate-y-2' : ''}`} />
+          <span className={`block w-6 h-0.5 bg-white transition-all duration-200 ${isMenuOpen ? 'opacity-0' : ''}`} />
+          <span className={`block w-6 h-0.5 bg-white transition-all duration-200 ${isMenuOpen ? '-rotate-45 -translate-y-2' : ''}`} />
         </button>
       </nav>
 
-      {/* Mobile Menu */}
-      {isMenuOpen && (
-        <motion.div
-          className="md:hidden bg-crestara-blue border-t border-crestara-border"
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: 'auto' }}
-        >
-          <div className="px-4 py-4 space-y-4">
-            <Link href="/casino" className="block hover:text-crestara-teal transition">
-              Casino
-            </Link>
-            <Link href="/mining" className="block hover:text-crestara-teal transition">
-              Mining
-            </Link>
-            <Link href="/referrals" className="block hover:text-crestara-teal transition">
-              Referrals
-            </Link>
-            {user && (
-              <Link href="/dashboard" className="block hover:text-crestara-teal transition">
-                Dashboard
-              </Link>
-            )}
-            {!user && (
-              <>
-                <Link href="/auth/login">
-                  <button className="w-full px-4 py-2 border border-crestara-teal text-crestara-teal rounded">
-                    Login
-                  </button>
+      {/* Mobile menu */}
+      <AnimatePresence>
+        {isMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            style={{ background: 'rgba(6,13,23,0.98)', borderBottom: '1px solid #1a3050' }}
+          >
+            <div className="px-4 py-6 flex flex-col gap-4">
+              {navLinks.map(({ href, label }) => (
+                <Link
+                  key={href}
+                  href={href}
+                  onClick={() => setIsMenuOpen(false)}
+                  className="text-gray-300 hover:text-white py-2 border-b border-gray-800 transition-colors"
+                  style={{ fontFamily: 'Orbitron, system-ui, sans-serif', fontSize: '0.85rem', letterSpacing: '0.1em' }}
+                >
+                  {label}
                 </Link>
-                <Link href="/auth/signup">
-                  <button className="w-full px-4 py-2 bg-gradient-neon text-white rounded">
-                    Sign Up
+              ))}
+              {user ? (
+                <div className="flex flex-col gap-3 pt-2">
+                  <Link href="/dashboard" onClick={() => setIsMenuOpen(false)}>
+                    <button className="btn-outline w-full">Dashboard</button>
+                  </Link>
+                  <button onClick={() => { logout(); setIsMenuOpen(false); }} className="text-red-400 text-sm py-2">
+                    Logout
                   </button>
-                </Link>
-              </>
-            )}
-          </div>
-        </motion.div>
-      )}
+                </div>
+              ) : (
+                <div className="flex flex-col gap-3 pt-2">
+                  <Link href="/auth/login" onClick={() => setIsMenuOpen(false)}>
+                    <button className="btn-outline w-full">Login</button>
+                  </Link>
+                  <Link href="/auth/signup" onClick={() => setIsMenuOpen(false)}>
+                    <button className="btn-primary w-full">Sign Up Free</button>
+                  </Link>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </header>
   );
 }
