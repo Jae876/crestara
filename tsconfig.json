@@ -42,7 +42,8 @@
       }
     ],
     "allowJs": true,
-    "noEmit": true
+    "noEmit": true,
+    "esModuleInterop": true
   },
   "include": [
     "next-env.d.ts",
