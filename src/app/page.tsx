@@ -129,7 +129,7 @@ export default function Home() {
               PREMIUM CRYPTO CASINO &amp; AI CLOUD MINING
             </p>
             <p className="text-sm mb-8" style={{ color: '#6b7e96', letterSpacing: '0.2em' }}>
-              TRADE &nbsp;•&nbsp; MINE &nbsp;•&nbsp; GAMBLE &nbsp;•&nbsp; EARN
+              TRADE &nbsp;•&nbsp; MINE &nbsp;•&nbsp; GAMBLE &nbsp;•&nbsp; PREDICT &nbsp;•&nbsp; EARN
             </p>
           </motion.div>
 
@@ -331,55 +331,43 @@ export default function Home() {
             ))}
           </div>
 
-          {/* Diamond tier — full-width premium card */}
-          {MINING_PLANS.filter((p) => p.diamond).map((pkg) => (
+          {MINING_PLANS.filter((p) => p.diamond).map((pkg, i) => (
             <motion.div key={pkg.id}
+              className="relative rounded-2xl p-6 card"
               initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }} transition={{ delay: 0.4 }}
-              whileHover={{ y: -3 }}
-              style={{
-                position: 'relative', borderRadius: 20, padding: '28px 32px',
-                background: 'linear-gradient(135deg, rgba(168,85,247,0.1) 0%, rgba(13,32,64,0.9) 50%, rgba(168,85,247,0.06) 100%)',
-                border: '1px solid rgba(168,85,247,0.4)',
-                boxShadow: '0 0 40px rgba(168,85,247,0.12)',
-                marginBottom: 4,
-              }}>
-              <div style={{ position: 'absolute', top: -13, left: '50%', transform: 'translateX(-50%)', whiteSpace: 'nowrap' }}>
-                <span style={{ padding: '4px 16px', borderRadius: 20, fontFamily: 'Orbitron, system-ui', fontSize: '0.62rem', fontWeight: 900, letterSpacing: '0.12em', background: 'linear-gradient(135deg, #a855f7, #7c3aed)', color: '#fff' }}>
-                  💎 DIAMOND · INSTITUTIONAL TIER
+              viewport={{ once: true }} transition={{ delay: i * 0.08 }}
+              whileHover={{ y: -5 }}
+              style={{ borderColor: `${pkg.color}25` }}>
+              <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 whitespace-nowrap">
+                <span className="px-3 py-1 rounded-full text-xs font-black"
+                  style={{ background: 'linear-gradient(135deg, #a855f7, #7c3aed)', color: '#fff', fontFamily: 'Orbitron, system-ui', fontSize: '0.6rem', letterSpacing: '0.08em' }}>
+                  💎 DIAMOND
                 </span>
               </div>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 24, alignItems: 'center', justifyContent: 'space-between' }}>
-                <div>
-                  <h3 style={{ fontFamily: 'Orbitron, system-ui', fontSize: '1.5rem', fontWeight: 900, color: '#a855f7', marginBottom: 4 }}>Diamond Bot</h3>
-                  <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginTop: 8 }}>
-                    {[
-                      { label: 'Daily Earnings', value: `$${pkg.daily.toFixed(2)}`, color: '#a855f7' },
-                      { label: 'Duration',        value: `${pkg.days} days`,        color: '#fff'    },
-                      { label: 'Est. Return',     value: `$${pkg.total.toLocaleString()}`, color: '#c9a96e' },
-                    ].map((s) => (
-                      <div key={s.label} style={{ minWidth: 100 }}>
-                        <div style={{ fontSize: '0.68rem', color: '#4a5a6a', marginBottom: 2, fontFamily: 'Orbitron, system-ui', letterSpacing: '0.06em', textTransform: 'uppercase' }}>{s.label}</div>
-                        <div style={{ fontFamily: 'Orbitron, system-ui', fontWeight: 900, fontSize: '1.1rem', color: s.color }}>{s.value}</div>
-                      </div>
-                    ))}
-                  </div>
-                  <div style={{ marginTop: 12, display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                    {['All 6 coins', 'Private VIP group', 'Dedicated account manager', 'Priority withdrawals', 'API access'].map((f) => (
-                      <span key={f} style={{ fontSize: '0.68rem', padding: '3px 10px', borderRadius: 8, background: 'rgba(168,85,247,0.1)', border: '1px solid rgba(168,85,247,0.25)', color: '#c4a0f0' }}>{f}</span>
-                    ))}
-                  </div>
+              <h3 className="font-black mb-1 text-base" style={{ fontFamily: 'Orbitron, system-ui', color: pkg.color }}>{pkg.label}</h3>
+              <div className="text-3xl font-black mb-1" style={{ fontFamily: 'Orbitron, system-ui', color: '#fff' }}>${pkg.price.toLocaleString()}</div>
+              <div className="text-xs mb-4" style={{ color: '#4a5a6a' }}>one-time</div>
+              <div className="space-y-2 mb-5 text-xs">
+                <div className="flex justify-between">
+                  <span style={{ color: '#6b7e96' }}>Daily</span>
+                  <span className="font-bold" style={{ color: pkg.color }}>${pkg.daily.toFixed(2)}</span>
                 </div>
-                <div style={{ textAlign: 'center', flexShrink: 0 }}>
-                  <div style={{ fontFamily: 'Orbitron, system-ui', fontSize: '2.5rem', fontWeight: 900, color: '#fff', marginBottom: 4 }}>$1,000</div>
-                  <div style={{ fontSize: '0.72rem', color: '#4a5a6a', marginBottom: 16 }}>one-time · lifetime support</div>
-                  <Link href="/auth/signup">
-                    <button style={{ padding: '14px 36px', borderRadius: 12, fontFamily: 'Orbitron, system-ui', fontSize: '0.78rem', fontWeight: 900, letterSpacing: '0.08em', background: 'linear-gradient(135deg, #a855f7, #7c3aed)', color: '#fff', border: 'none', cursor: 'pointer', boxShadow: '0 4px 20px rgba(168,85,247,0.3)', transition: 'all 0.2s' }}>
-                      💎 Activate Diamond Bot
-                    </button>
-                  </Link>
+                <div className="flex justify-between">
+                  <span style={{ color: '#6b7e96' }}>Duration</span>
+                  <span className="font-bold" style={{ color: '#fff' }}>{pkg.days} days</span>
+                </div>
+                <div style={{ height: 1, background: '#1a3050', margin: '8px 0' }} />
+                <div className="flex justify-between">
+                  <span style={{ color: '#6b7e96' }}>Est. Total</span>
+                  <span className="font-bold" style={{ color: '#c9a96e' }}>${pkg.total.toLocaleString()}</span>
                 </div>
               </div>
+              <Link href="/auth/signup">
+                <button className="w-full py-2.5 rounded-xl text-xs font-bold transition-all btn-primary"
+                  style={{ fontFamily: 'Orbitron, system-ui', letterSpacing: '0.05em', background: 'linear-gradient(135deg, #a855f7, #7c3aed)' }}>
+                  💎 Activate Diamond
+                </button>
+              </Link>
             </motion.div>
           ))}
 

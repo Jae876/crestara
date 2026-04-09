@@ -72,6 +72,30 @@ src/
 - 300% first-deposit bonus + 2 free spins
 - 130+ crypto deposit support
 - JWT-secured authentication with refresh tokens
+- Predictions Market (admin-controlled): create/resolve events, users bet on options with locked odds, automatic payouts on resolution
+
+## Predictions Market
+
+Admin-controlled prediction events with real-world topics (crypto, sports, politics, entertainment).
+
+**Models**: `Prediction`, `PredictionOption`, `PredictionBet`
+**Statuses**: DRAFT → OPEN → SUSPENDED/RESOLVED/CANCELLED
+**Settlement**: PENDING → WON/LOST/REFUNDED (on resolution/cancel)
+
+**User routes**:
+- `GET /api/predictions` — list open predictions
+- `GET /api/predictions/:id` — get single prediction
+- `POST /api/predictions/bet` — place a bet (deducts balance)
+- `GET /api/predictions/my-bets` — user's bet history
+
+**Admin routes** (JWT required, ADMIN role):
+- `GET/POST /api/admin/predictions` — list all / create
+- `PATCH /api/admin/predictions/:id` — edit, open, suspend, cancel, resolve
+- `GET /api/admin/predictions/:id/bets` — bets drill-down
+
+**Pages**:
+- `/predictions` — user-facing card grid with bet slip panel + My Bets tab
+- `/admin/predictions` — full control centre (create, edit, resolve, suspend, cancel, view bets)
 
 ## Environment Variables
 

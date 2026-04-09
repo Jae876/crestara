@@ -13,6 +13,8 @@ interface Stats {
   pendingWithdrawalsUSD: number;
   activeBots: number;
   totalBets: number;
+  activePredictions: number;
+  predictionsTotalWagered: number;
   recentUsers: Array<{ id: string; email: string; balanceUSD: number; createdAt: string; role: string }>;
 }
 
@@ -24,12 +26,13 @@ function AdminSidebar() {
         <div style={{ fontFamily: 'Orbitron, system-ui', fontSize: '0.7rem', fontWeight: 700, color: '#c9a96e', letterSpacing: '0.12em' }}>Admin Panel</div>
       </div>
       {[
-        { href: '/admin',             label: 'Dashboard',     icon: '📊' },
-        { href: '/admin/withdrawals', label: 'Withdrawals',   icon: '✅' },
-        { href: '/admin/wallets',     label: 'Wallets',       icon: '👛' },
-        { href: '/admin/users',       label: 'Users',         icon: '👤' },
-        { href: '/admin/virtual',     label: 'Virtual Games', icon: '🏟️' },
-        { href: '/dashboard',         label: '← Back to App', icon: '🏠' },
+        { href: '/admin',              label: 'Dashboard',   icon: '📊' },
+        { href: '/admin/withdrawals',  label: 'Withdrawals', icon: '✅' },
+        { href: '/admin/wallets',      label: 'Wallets',     icon: '👛' },
+        { href: '/admin/users',        label: 'Users',       icon: '👤' },
+        { href: '/admin/predictions',  label: 'Predictions', icon: '🔮' },
+        { href: '/admin/virtual',      label: 'Virtual Games', icon: '🎮' },
+        { href: '/dashboard',          label: '← Back to App', icon: '🏠' },
       ].map((item) => (
         <Link key={item.href} href={item.href}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px', fontSize: '0.82rem', color: '#8aabb8', cursor: 'pointer', transition: 'all 0.15s' }}
@@ -71,6 +74,8 @@ function DashboardContent() {
     { label: 'Withdrawal Value',     value: `$${stats.pendingWithdrawalsUSD.toFixed(2)}`, icon: '💳', color: '#ffd700' },
     { label: 'Active Mining Bots',   value: stats.activeBots.toLocaleString(),           icon: '🤖', color: '#1e90ff' },
     { label: 'Total Bets Placed',    value: stats.totalBets.toLocaleString(),            icon: '🎲', color: '#a855f7' },
+    { label: 'Active Predictions',   value: (stats.activePredictions || 0).toLocaleString(), icon: '🔮', color: '#f97316' },
+    { label: 'Predictions Wagered',  value: `$${(stats.predictionsTotalWagered || 0).toFixed(2)}`, icon: '📊', color: '#ec4899' },
   ];
 
   return (
@@ -91,9 +96,10 @@ function DashboardContent() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12, marginBottom: 28 }}>
         {[
           { href: '/admin/withdrawals', label: 'Approve Withdrawals', icon: '✅', urgent: stats.pendingWithdrawalsCount > 0, count: stats.pendingWithdrawalsCount },
-          { href: '/admin/wallets',     label: 'Manage Wallets',      icon: '👛', urgent: false },
-          { href: '/admin/users',       label: 'Manage Users',        icon: '👤', urgent: false },
-          { href: '/admin/virtual',     label: 'Virtual Games',       icon: '🏟️', urgent: false },
+          { href: '/admin/wallets',     label: 'Manage Wallets',      icon: '👛', urgent: false, count: 0 },
+          { href: '/admin/users',       label: 'Manage Users',        icon: '👤', urgent: false, count: 0 },
+          { href: '/admin/predictions', label: 'Predictions',         icon: '🔮', urgent: false, count: 0 },
+          { href: '/admin/virtual',     label: 'Virtual Games',       icon: '🎮', urgent: false, count: 0 },
         ].map((a) => (
           <Link key={a.href} href={a.href}>
             <div style={{ background: a.urgent ? 'rgba(245,101,101,0.1)' : 'rgba(0,196,180,0.07)', border: `1px solid ${a.urgent ? 'rgba(245,101,101,0.3)' : 'rgba(0,196,180,0.2)'}`, borderRadius: 12, padding: '16px 18px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12 }}>

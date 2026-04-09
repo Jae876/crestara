@@ -76,6 +76,29 @@ enum ReferralStatus {
   CREDITED
 }
 
+enum PredictionStatus {
+  DRAFT
+  OPEN
+  SUSPENDED
+  RESOLVED
+  CANCELLED
+}
+
+enum PredictionBetSettlement {
+  PENDING
+  WON
+  LOST
+  REFUNDED
+}
+
+enum PredictionCategory {
+  CRYPTO
+  SPORTS
+  POLITICS
+  ENTERTAINMENT
+  OTHER
+}
+
 // ==================
 // CORE ENTITIES
 // ==================
@@ -111,6 +134,7 @@ model User {
   asReferred    Referral[] @relation("ReferredUser")
   wheelSpins    WheelSpin[]
   virtualBets   VirtualBet[]
+  predictionBets PredictionBet[]
   
   @@index([email])
   @@index([referralCode])
@@ -411,6 +435,72 @@ model VirtualBet {
   @@index([userId])
   @@index([eventId])
   @@index([status])
+}
+
+// ==================
+// PREDICTIONS MARKET
+// ==================
+
+model Prediction {
+  id                String              @id @default(cuid())
+  title             String
+  description       String
+  category          PredictionCategory  @default(OTHER)
+  imageUrl          String?
+  status            PredictionStatus    @default(DRAFT)
+
+  bettingStartsAt   DateTime
+  bettingEndsAt     DateTime
+
+  resolvedOptionId  String?
+
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  options           PredictionOption[]
+  bets              PredictionBet[]
+
+  @@index([status])
+  @@index([category])
+}
+
+model PredictionOption {
+  id            String    @id @default(cuid())
+  predictionId  String
+  prediction    Prediction @relation(fields: [predictionId], references: [id], onDelete: Cascade)
+
+  label         String
+  odds          Float
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  bets          PredictionBet[]
+
+  @@index([predictionId])
+}
+
+model PredictionBet {
+  id            String                  @id @default(cuid())
+  userId        String
+  user          User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  predictionId  String
+  prediction    Prediction              @relation(fields: [predictionId], references: [id], onDelete: Cascade)
+  optionId      String
+  option        PredictionOption        @relation(fields: [optionId], references: [id], onDelete: Cascade)
+
+  amount        Float
+  lockedOdds    Float
+  potentialPayout Float
+
+  settlement    PredictionBetSettlement @default(PENDING)
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([predictionId])
+  @@index([settlement])
 }
 
 // ==================

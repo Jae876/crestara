@@ -24,6 +24,7 @@ export function Header() {
   const navLinks = [
     { href: '/casino', label: 'Casino' },
     { href: '/virtual', label: 'Virtual Sports' },
+    { href: '/predictions', label: 'Predictions' },
     { href: '/mining', label: 'AI Cloud Mining' },
     { href: '/referrals', label: 'Referrals' },
   ];

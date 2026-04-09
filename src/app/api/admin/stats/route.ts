@@ -20,6 +20,8 @@ export async function GET(request: NextRequest) {
       activeBots,
       totalBets,
       recentUsers,
+      activePredictions,
+      predictionsBetTotal,
     ] = await Promise.all([
       prisma.user.count(),
       prisma.transaction.aggregate({
@@ -38,6 +40,8 @@ export async function GET(request: NextRequest) {
         take: 10,
         select: { id: true, email: true, balanceUSD: true, createdAt: true, role: true },
       }),
+      prisma.prediction.count({ where: { status: 'OPEN' } }),
+      prisma.predictionBet.aggregate({ _sum: { amount: true } }),
     ]);
 
     return NextResponse.json({
@@ -48,6 +52,8 @@ export async function GET(request: NextRequest) {
       activeBots,
       totalBets,
       recentUsers,
+      activePredictions,
+      predictionsTotalWagered: predictionsBetTotal._sum?.amount || 0,
     });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
