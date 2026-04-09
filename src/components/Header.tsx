@@ -19,7 +19,7 @@ export function Header() {
 
   const navLinks = [
     { href: '/casino', label: 'Casino' },
-    { href: '/mining', label: 'Mining' },
+    { href: '/mining', label: 'AI Cloud Mining' },
     { href: '/referrals', label: 'Referrals' },
   ];
 

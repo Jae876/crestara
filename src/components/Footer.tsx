@@ -51,7 +51,7 @@ export function Footer() {
             <ul className="space-y-3">
               {[
                 { href: '/casino', label: 'Casino' },
-                { href: '/mining', label: 'Cloud Mining' },
+                { href: '/mining', label: 'AI Cloud Mining' },
                 { href: '/referrals', label: 'Referral Program' },
                 { href: '/dashboard', label: 'Dashboard' },
               ].map(({ href, label }) => (

@@ -116,7 +116,7 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
           {[
             { href: '/casino', icon: '🎰', title: 'Casino', desc: 'Crash, Plinko, Dice, Mines & more', color: '#00c4b4' },
-            { href: '/mining', icon: '⛏️', title: 'Cloud Mining', desc: 'AI bots, daily earnings', color: '#c9a96e' },
+            { href: '/mining', icon: '⛏️', title: 'AI Cloud Mining', desc: 'AI bots, daily earnings', color: '#c9a96e' },
             { href: '/referrals', icon: '🔗', title: 'Referral Program', desc: 'Earn $2 per successful referral', color: '#1e90ff' },
           ].map(({ href, icon, title, desc, color }) => (
             <Link href={href} key={href}>
@@ -216,7 +216,7 @@ export default function DashboardPage() {
             {/* Active mining bots */}
             <div className="card p-6">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="font-bold" style={{ fontFamily: 'Orbitron, system-ui', fontSize: '0.85rem', color: '#c9a96e' }}>⛏️ Mining Bots</h2>
+                <h2 className="font-bold" style={{ fontFamily: 'Orbitron, system-ui', fontSize: '0.85rem', color: '#c9a96e' }}>⛏️ AI Mining Bots</h2>
                 <Link href="/mining" className="text-xs hover:underline" style={{ color: '#00c4b4' }}>View all</Link>
               </div>
               {activeBots.length > 0 ? (

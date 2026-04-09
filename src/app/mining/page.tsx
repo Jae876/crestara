@@ -80,7 +80,7 @@ export default function MiningPage() {
         <div className="glow-orb" style={{ width: 500, height: 500, top: '-150px', right: '5%', background: 'rgba(201,169,110,0.04)' }} />
         <div className="max-w-7xl mx-auto relative z-10">
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
-            <h1 className="text-4xl font-bold mb-2 gold-text" style={{ fontFamily: 'Orbitron, system-ui' }}>Cloud Mining</h1>
+            <h1 className="text-4xl font-bold mb-2 gold-text" style={{ fontFamily: 'Orbitron, system-ui' }}>AI Cloud Mining</h1>
             <p style={{ color: '#6b7e96' }}>AI-powered bots. Daily payouts. Real earnings.</p>
           </motion.div>
         </div>
