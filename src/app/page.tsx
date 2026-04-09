@@ -173,7 +173,7 @@ export default function Home() {
             viewport={{ once: true }}
           >
             <h2 className="text-3xl md:text-4xl font-bold mb-3 neon-text">Premium Casino Games</h2>
-            <p style={{ color: '#6b7e96' }}>New members enjoy an 80% boosted win rate — the best time to start is now.</p>
+            <p style={{ color: '#6b7e96' }}>Every result is cryptographically verifiable. No house tricks. The best time to start is now.</p>
           </motion.div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
