@@ -163,10 +163,7 @@ export default function CasinoPage() {
                           {type.charAt(0) + type.slice(1).toLowerCase()}
                         </h3>
                         <p className="text-xs mb-4 leading-relaxed" style={{ color: '#6b7e96' }}>{meta.desc}</p>
-                        <div className="flex items-center justify-between">
-                          <div className="text-xs" style={{ color: '#4a5a6a' }}>
-                            Edge: <span style={{ color: '#00c4b4' }}>{game.houseEdge || game.houseEdgePercent || 2}%</span>
-                          </div>
+                        <div className="flex items-center justify-end">
                           <button
                             className="text-xs font-bold px-4 py-1.5 rounded-lg transition-all"
                             style={{
