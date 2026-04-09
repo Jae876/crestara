@@ -63,7 +63,7 @@ export default function CasinoPage() {
               <span className="text-xs uppercase tracking-widest" style={{ color: '#48bb78', fontFamily: 'Orbitron, system-ui' }}>Live</span>
             </div>
             <h1 className="text-4xl font-bold mb-2 neon-text" style={{ fontFamily: 'Orbitron, system-ui' }}>Casino</h1>
-            <p style={{ color: '#6b7e96', fontSize: '0.9rem' }}>Premium house-edge gaming — new members enjoy boosted win rates</p>
+            <p style={{ color: '#6b7e96', fontSize: '0.9rem' }}>Premium crypto casino — instant payouts, 300% welcome bonus</p>
           </motion.div>
         </div>
       </div>
@@ -190,18 +190,27 @@ export default function CasinoPage() {
 
           {/* Right sidebar */}
           <div className="space-y-5">
-            {/* New player advantage */}
-            <div className="card p-5" style={{ borderColor: 'rgba(201,169,110,0.25)' }}>
-              <h3 className="font-bold mb-3 text-xs uppercase tracking-widest" style={{ fontFamily: 'Orbitron, system-ui', color: '#c9a96e' }}>
-                🎯 New Player Boost
+            {/* Trust & security */}
+            <div className="card p-5" style={{ borderColor: 'rgba(0,196,180,0.2)' }}>
+              <h3 className="font-bold mb-4 text-xs uppercase tracking-widest" style={{ fontFamily: 'Orbitron, system-ui', color: '#00c4b4' }}>
+                🔒 Secure Platform
               </h3>
-              <p className="text-xs leading-relaxed mb-3" style={{ color: '#6b7e96' }}>
-                New members enjoy an <span style={{ color: '#ffd700', fontWeight: 700 }}>80% win-rate advantage</span> on all games during their first sessions — giving you the best chance to build your bankroll fast.
-              </p>
-              <div className="w-full rounded-full overflow-hidden mb-2" style={{ height: 6, background: 'rgba(26,48,80,0.8)' }}>
-                <div style={{ width: '80%', height: '100%', background: 'linear-gradient(90deg, #c9a96e, #ffd700)', borderRadius: 3 }} />
+              <div className="space-y-3">
+                {[
+                  { icon: '🛡️', label: '256-bit SSL Encryption', sub: 'All transactions encrypted' },
+                  { icon: '⚡', label: 'Instant Withdrawals', sub: 'Crypto out in under 5 min' },
+                  { icon: '🌐', label: 'Licensed & Regulated', sub: 'Curaçao eGaming certified' },
+                  { icon: '🤝', label: 'Responsible Gaming', sub: 'Deposit & loss limits' },
+                ].map((item) => (
+                  <div key={item.label} className="flex items-start gap-3">
+                    <span className="text-base mt-0.5">{item.icon}</span>
+                    <div>
+                      <div className="text-xs font-bold" style={{ color: '#d9d5c8' }}>{item.label}</div>
+                      <div className="text-xs" style={{ color: '#4a5a6a' }}>{item.sub}</div>
+                    </div>
+                  </div>
+                ))}
               </div>
-              <p className="text-xs text-right" style={{ color: '#c9a96e' }}>80% win rate</p>
             </div>
 
             {/* Live wins */}
